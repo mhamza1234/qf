@@ -4,48 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Qur’an Word Explorer</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+
   <link rel="stylesheet" href="styles.css" />
-  <!-- Optional: Google Noto Arabic for nicer Arabic rendering -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header class="topbar">
+  <header class="app-bar">
     <div class="brand">Qur’an Word Explorer</div>
+
     <div class="controls">
-      <label for="deckSelect">সূরা:</label>
-      <select id="deckSelect" aria-label="Choose deck"></select>
-      <button id="reloadBtn" type="button">Reload</button>
+      <label for="surahSelect" class="sr-only">সূরা</label>
+      <select id="surahSelect" class="select"></select>
+      <button id="reloadBtn" class="btn">Reload</button>
     </div>
   </header>
 
-  <main id="app">
-    <div id="errorBox" class="error hidden"></div>
-    <div id="content"></div>
-  </main>
+  <main id="app"></main>
 
-  <template id="verseTpl">
-    <section class="verse-card">
-      <h3 class="ayah-title"></h3>
-      <div class="ayah-ar"></div>
-      <div class="words"></div>
-    </section>
-  </template>
+  <footer class="footer">
+    <small>Tip: Add more decks by editing your JSON files. This viewer supports your “full surah → all verses → horizontal word cards” layout.</small>
+  </footer>
 
-  <template id="wordTpl">
-    <div class="word-row">
-      <div class="word-main">
-        <div class="word-ar"></div>
-        <div class="word-bn"></div>
-      </div>
-      <div class="word-meta">
-        <div class="meta-line"><strong>Root:</strong> <span class="root"></span></div>
-        <div class="meta-line"><strong>Root Meaning:</strong> <span class="rootMeaning"></span></div>
-        <div class="meta-line"><strong>Morphology:</strong> <span class="form"></span></div>
-        <div class="related"></div>
-      </div>
-    </div>
-  </template>
-
-  <script src="app.js" defer></script>
+  <script src="app.js"></script>
 </body>
 </html>
