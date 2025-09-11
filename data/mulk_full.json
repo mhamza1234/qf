@@ -1,0 +1,205 @@
+{
+  "name_bengali": "সূরা আল-মুলক",
+  "name_arabic": "سورة الملك",
+  "verses": [
+    {
+      "verse_number": 1,
+      "verse_arabic": "تَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
+      "words": [
+        {
+          "arabic": "تَبَارَكَ",
+          "transliteration": "তাবারাকা",
+          "meaning": "তিনি কত কল্যাণময়।",
+          "root": "ب-ر-ك (B-R-K)",
+          "root_meaning": "কল্যাণ, বরকত হওয়া।",
+          "form": "অতীত কালের ক্রিয়া।",
+          "related_words": [
+            {"arabic": "بَرَكَة", "meaning": "কল্যাণ, বরকত"},
+            {"arabic": "مُبَارَك", "meaning": "কল্যাণময়"}
+          ]
+        },
+        {
+          "arabic": "الَّذِي",
+          "transliteration": "আল্লাযী",
+          "meaning": "যিনি।",
+          "root": "N/A"
+        },
+        {
+          "arabic": "بِيَدِهِ",
+          "transliteration": "বি-ইয়াদিহি",
+          "meaning": "তাঁর হাতে।",
+          "root": "ی-د-د (Y-D-D)",
+          "root_meaning": "হাত।",
+          "form": "বিশেষ্য *ইয়াদ* ('হাত') + সর্বনাম *-হি* ('তাঁর') + উপসর্গ *বি-* ('দ্বারা')।"
+        },
+        {
+          "arabic": "الْمُلْكُ",
+          "transliteration": "আল-মুলকু",
+          "meaning": "সার্বভৌমত্ব, রাজত্ব।",
+          "root": "م-ل-ك (M-L-K)",
+          "root_meaning": "রাজত্ব, মালিকানা।",
+          "form": "বিশেষ্য।",
+          "related_words": [
+            {"arabic": "مَالِك", "meaning": "মালিক"},
+            {"arabic": "مَلِك", "meaning": "বাদশাহ"}
+          ]
+        },
+        {
+          "arabic": "وَهُوَ",
+          "transliteration": "ওয়া-হুয়া",
+          "meaning": "এবং তিনি।",
+          "root": "N/A"
+        },
+        {
+          "arabic": "عَلَىٰ",
+          "transliteration": "আলা",
+          "meaning": "উপর।",
+          "root": "N/A"
+        },
+        {
+          "arabic": "كُلِّ",
+          "transliteration": "কুল্লি",
+          "meaning": "প্রত্যেক।",
+          "root": "ك-ل-ل (K-L-L)",
+          "root_meaning": "সম্পূর্ণতা, সব।"
+        },
+        {
+          "arabic": "شَيْءٍ",
+          "transliteration": "শাইয়িন",
+          "meaning": "বস্তু।",
+          "root": "ش-ی-ء (Sh-Y-ʾ)",
+          "root_meaning": "কোনো কিছু, বস্তু।"
+        },
+        {
+          "arabic": "قَدِيرٌ",
+          "transliteration": "ক্বদিরুন",
+          "meaning": "মহাশক্তিমান।",
+          "root": "ك-د-ر (K-D-R)",
+          "root_meaning": "ক্ষমতা, নির্ধারণ করা।",
+          "form": "বিশেষণ।",
+          "related_words": [
+            {"arabic": "قَدْر", "meaning": "ভাগ্য, পরিমাণ"}
+          ]
+        }
+      ]
+    },
+    {
+      "verse_number": 2,
+      "verse_arabic": "الَّذِي خَلَقَ الْمَوْتَ وَالْحَيَاةَ لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا وَهُوَ الْعَزِيزُ الْغَفُورُ",
+      "words": [
+        {
+          "arabic": "الَّذِي",
+          "transliteration": "আল্লাযী",
+          "meaning": "যিনি।",
+          "root": "N/A"
+        },
+        {
+          "arabic": "خَلَقَ",
+          "transliteration": "খালাক্বা",
+          "meaning": "সৃষ্টি করেছেন।",
+          "root": "خ-ل-ق (Kh-L-Q)",
+          "root_meaning": "সৃষ্টি করা।",
+          "form": "অতীত কালের ক্রিয়া।",
+          "related_words": [
+            {"arabic": "خَلْق", "meaning": "সৃষ্টি (বিশেষ্য)"},
+            {"arabic": "مَخْلُوق", "meaning": "সৃষ্ট বস্তু"}
+          ]
+        },
+        {
+          "arabic": "الْمَوْتَ",
+          "transliteration": "আল-মাওতা",
+          "meaning": "মৃত্যু।",
+          "root": "م-و-ت (M-W-T)",
+          "root_meaning": "মৃত্যু, মরা।"
+        },
+        {
+          "arabic": "وَالْحَيَاةَ",
+          "transliteration": "ওয়াল-হায়া-তা",
+          "meaning": "এবং জীবন।",
+          "root": "ح-ي-ي (Ḥ-Y-Y)",
+          "root_meaning": "জীবন্ত হওয়া, জীবন।"
+        },
+        {
+          "arabic": "لِيَبْلُوَكُمْ",
+          "transliteration": "লিয়াব্লুওয়াকুম",
+          "meaning": "যাতে তিনি তোমাদেরকে পরীক্ষা করেন।",
+          "root": "ب-ل-و (B-L-W)",
+          "root_meaning": "পরীক্ষা করা, যাচাই করা।",
+          "form": "লি- (যাতে) + ক্রিয়া + -কুম (তোমাদের)।"
+        },
+        {
+          "arabic": "أَيُّكُمْ",
+          "transliteration": "আইয়্যুকুম",
+          "meaning": "তোমাদের মধ্যে কে।",
+          "root": "أ-ي-ي (ʾ-Y-Y)",
+          "root_meaning": "কে, কোনটা।",
+          "form": "প্রশ্নবোধক সর্বনাম।"
+        },
+        {
+          "arabic": "أَحْسَنُ",
+          "transliteration": "আহসানু",
+          "meaning": "উত্তম।",
+          "root": "ح-س-ن (Ḥ-S-N)",
+          "root_meaning": "সুন্দর, উত্তম হওয়া।",
+          "form": "বিশেষ্য।",
+          "related_words": [{"arabic": "حَسَنَة", "meaning": "ভালো কাজ"}]
+        },
+        {
+          "arabic": "عَمَلًا",
+          "transliteration": "ʿআমালান",
+          "meaning": "কর্মে।",
+          "root": "ع-م-ل (ʿ-M-L)",
+          "root_meaning": "কাজ করা।",
+          "form": "বিশেষ্য।",
+          "related_words": [{"arabic": "عَمِلَ", "meaning": "সে কাজ করল"}]
+        },
+        {
+          "arabic": "وَهُوَ",
+          "transliteration": "ওয়া-হুয়া",
+          "meaning": "এবং তিনিই।",
+          "root": "N/A"
+        },
+        {
+          "arabic": "الْعَزِيزُ",
+          "transliteration": "আল-আযীযু",
+          "meaning": "পরাক্রমশালী।",
+          "root": "ع-ز-ز (ʿ-Z-Z)",
+          "root_meaning": "শক্তিমান হওয়া, বিজয়ী হওয়া।"
+        },
+        {
+          "arabic": "الْغَفُورُ",
+          "transliteration": "আল-গাফুরু",
+          "meaning": "ক্ষমাকারী।",
+          "root": "غ-ف-ر (Gh-F-R)",
+          "root_meaning": "ক্ষমা করা, ঢেকে দেওয়া।",
+          "form": "বিশেষণ।",
+          "related_words": [{"arabic": "مَغْفِرَة", "meaning": "ক্ষমা"}]
+        }
+      ]
+    },
+    {
+      "verse_number": 3,
+      "verse_arabic": "الَّذِي خَلَقَ سَبْعَ سَمَاوَاتٍ طِبَاقًا مَّا تَرَىٰ فِي خَلْقِ الرَّحْمَٰنِ مِن تَفَاوُتٍ فَارْجِعِ الْبَصَرَ هَلْ تَرَىٰ مِن فُطُورٍ",
+      "words": [
+        {"arabic": "الَّذِي","transliteration":"আল্লাযী","meaning":"যিনি।","root":"N/A"},
+        {"arabic": "خَلَقَ","transliteration":"খালাক্বা","meaning":"সৃষ্টি করেছেন।","root":"خ-ل-ق (Kh-L-Q)","root_meaning":"সৃষ্টি করা।"},
+        {"arabic": "سَبْعَ","transliteration":"সাবʿআ","meaning":"সাত।","root":"س-ب-ع (S-B-ʿ)","root_meaning":"সাত।"},
+        {"arabic": "سَمَاوَاتٍ","transliteration":"সামাওয়া-তিন","meaning":"আসমান।","root":"س-م-و (S-M-W)","root_meaning":"উচ্চতা, উপরে থাকা।","form":"বহুবচন।","related_words":[{"arabic":"سَمَاء","meaning":"আসমান"}]},
+        {"arabic": "طِبَاقًا","transliteration":"তিবাক্বন","meaning":"স্তরে স্তরে।","root":"ط-ب-ق (Ṭ-B-Q)","root_meaning":"স্তর, অনুক্রম।"},
+        {"arabic": "مَّا","transliteration":"মা","meaning":"না।","root":"N/A"},
+        {"arabic": "تَرَىٰ","transliteration":"তারা","meaning":"তুমি দেখবে।","root":"ر-أ-ى (R-ʾ-Y)","root_meaning":"দেখা, প্রত্যক্ষ করা।"},
+        {"arabic": "فِي","transliteration":"ফি","meaning":"মধ্যে।","root":"N/A"},
+        {"arabic": "خَلْقِ","transliteration":"খালক্বি","meaning":"সৃষ্টিতে।","root":"خ-ل-ق (Kh-L-Q)","root_meaning":"সৃষ্টি করা।","form":"বিশেষ্য।"},
+        {"arabic": "الرَّحْمَٰنِ","transliteration":"আর-রাহমানি","meaning":"পরম করুণাময়ের।","root":"ر-ح-م (R-H-M)","root_meaning":"দয়া করা, করুণা করা।","related_words":[{"arabic":"رَحِيم","meaning":"দয়ালু"}]},
+        {"arabic": "مِن","transliteration":"মিন","meaning":"কোনো।","root":"N/A"},
+        {"arabic": "تَفَاوُتٍ","transliteration":"তাফা-উতিন","meaning":"অসঙ্গতি।","root":"ف-و-ت (F-W-T)","root_meaning":"ব্যতিক্রম, ভিন্নতা।"},
+        {"arabic": "فَارْجِعِ","transliteration":"ফারজিʿই","meaning":"সুতরাং তুমি ফিরে তাকাও।","root":"ر-ج-ع (R-J-ʿ)","root_meaning":"ফিরে আসা, প্রত্যাবর্তন করা।","form":"আদেশসূচক ক্রিয়া।"},
+        {"arabic": "الْبَصَرَ","transliteration":"আল-বাসারা","meaning":"দৃষ্টি।","root":"ب-ص-ر (B-Ṣ-R)","root_meaning":"দেখা, দৃষ্টি।","form":"বিশেষ্য।"},
+        {"arabic": "هَلْ","transliteration":"হাল","meaning":"কি।","root":"N/A"},
+        {"arabic": "تَرَىٰ","transliteration":"তারা","meaning":"তুমি দেখতে পাচ্ছ।","root":"ر-أ-ى (R-ʾ-Y)","root_meaning":"দেখা, প্রত্যক্ষ করা।"},
+        {"arabic": "مِن","transliteration":"মিন","meaning":"কোনো।","root":"N/A"},
+        {"arabic": "فُطُورٍ","transliteration":"ফুতুরিন","meaning":"ফাটল বা ত্রুটি।","root":"ف-ط-ر (F-Ṭ-R)","root_meaning":"ফাটল, ভাঙন।","form":"বিশেষ্য।"}
+      ]
+    }
+  ]
+}
