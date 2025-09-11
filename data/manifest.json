@@ -1,12 +1,3 @@
 [
-  {
-    "id": "mulk-full",
-    "title": "Al-Mulk (67) — Full",
-    "src": "data/mulk_full.json"
-  },
-  {
-    "id": "mulk-audio-tajweed",
-    "title": "Al-Mulk (67) — Major Words + Audio",
-    "src": "data/mulk_audio_tajweed.json"
-  }
+  { "id": "mulk_full", "name": "Al-Mulk (67) — Full", "file": "mulk_full.json" }
 ]
