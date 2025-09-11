@@ -1,8 +1,40 @@
-[
-  {
-    "id": "mulk-full",
-    "name": "Al-Mulk (67) — Full",
-    "json": "data/mulk_full.json",
-    "mode": "full"
-  }
-]
+{
+  "surahs": [
+    {
+      "id": "67",
+      "name": "Al-Mulk",
+      "arabicName": "الملك",
+      "banglaName": "সার্বভৌমত্ব",
+      "dataFile": "data/surah-67-mulk.json",
+      "verses": 30,
+      "revelation": "Meccan"
+    },
+    {
+      "id": "1",
+      "name": "Al-Fatiha", 
+      "arabicName": "الفاتحة",
+      "banglaName": "সূচনা",
+      "dataFile": "data/surah-01-fatiha.json",
+      "verses": 7,
+      "revelation": "Meccan"
+    },
+    {
+      "id": "2",
+      "name": "Al-Baqarah",
+      "arabicName": "البقرة", 
+      "banglaName": "গরু",
+      "dataFile": "data/surah-02-baqarah.json",
+      "verses": 286,
+      "revelation": "Medinan"
+    },
+    {
+      "id": "112",
+      "name": "Al-Ikhlas",
+      "arabicName": "الإخلاص",
+      "banglaName": "একনিষ্ঠতা",
+      "dataFile": "data/surah-112-ikhlas.json",
+      "verses": 4,
+      "revelation": "Meccan"
+    }
+  ]
+}
