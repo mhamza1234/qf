@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="bn" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>সূরা বিশ্লেষণ — Qur’an Word Explorer</title>
+  <link rel="stylesheet" href="styles.css?v=1.0">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Qur’an Word Explorer</div>
+
+    <div class="controls">
+      <label class="ctl">
+        <span>সুরা:</span>
+        <select id="surahSelect">
+          <option value="" disabled selected>লোড হচ্ছে…</option>
+        </select>
+      </label>
+
+      <button id="reloadBtn" class="btn">Reload</button>
+      <span id="status" class="status muted"></span>
+    </div>
+  </header>
+
+  <main>
+    <div id="errorBanner" class="error hidden"></div>
+    <div id="surah-container"></div>
+  </main>
+
+  <footer class="footer muted">
+    Tip: Add more decks by editing <code>data/manifest.json</code>.
+  </footer>
+
+  <script src="app.js?v=1.0" defer></script>
+</body>
+</html>
