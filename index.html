@@ -1,31 +1,49 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bn" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Qur’an Word Explorer</title>
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
-
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="app-bar">
-    <div class="brand">Qur’an Word Explorer</div>
-
+  <header class="topbar">
+    <h1>Qur’an Word Explorer</h1>
     <div class="controls">
-      <label for="surahSelect" class="sr-only">সূরা</label>
-      <select id="surahSelect" class="select"></select>
-      <button id="reloadBtn" class="btn">Reload</button>
+      <label>সুরা:</label>
+      <select id="deckSelect">
+        <option>লোড হচ্ছে…</option>
+      </select>
+      <button id="reloadBtn">Reload</button>
     </div>
   </header>
 
-  <main id="app"></main>
+  <main id="app">
+    <section id="ayahHeader" class="ayah-header">
+      <div class="ayah-ar" id="ayahAr">‎</div>
+      <div class="ayah-bn" id="ayahBn">‎</div>
+    </section>
 
-  <footer class="footer">
-    <small>Tip: Add more decks by editing your JSON files. This viewer supports your “full surah → all verses → horizontal word cards” layout.</small>
-  </footer>
+    <section class="cards-scroller" id="cardsScroller" aria-label="Word cards"></section>
+  </main>
+
+  <template id="wordCardTpl">
+    <article class="word-card">
+      <div class="main-word">
+        <div class="word-ar" data-field="ar"></div>
+        <div class="word-bn" data-field="bn"></div>
+        <div class="meta-row">
+          <span class="word-tr" data-field="tr"></span>
+          <span class="word-root" data-field="root"></span>
+          <span class="word-pattern" data-field="pattern"></span>
+        </div>
+      </div>
+      <div class="derived-list" data-field="derived"></div>
+    </article>
+  </template>
 
   <script src="app.js"></script>
 </body>
