@@ -1,0 +1,14 @@
+[
+  {
+    "id": "67-full",
+    "display": "Al-Mulk (67) — Full",
+    "filename": "mulk_full.json"
+  }
+  /* Add more entries like:
+  ,{
+    "id": "001-full",
+    "display": "Al-Fātiḥah (1) — Full",
+    "filename": "fatiha_full.json"
+  }
+  */
+]
