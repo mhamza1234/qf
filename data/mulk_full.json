@@ -20,7 +20,7 @@
           ]
         },
 
-        /* ... more words ... */
+  
 
         {
           "ar": "قَدِيرٌ",
@@ -35,6 +35,6 @@
       ]
     }
 
-    /* add ayah 2..N with same structure */
+
   ]
 }
