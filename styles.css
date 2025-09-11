@@ -1,128 +1,109 @@
-/* ===== Base ===== */
 :root{
-  --bg:#f4f6f8;
-  --ink:#1f2a37;
-  --muted:#6b7280;
-
-  --brand:#00796b;
-  --brand-dark:#004d40;
-
-  --panel:#ffffff;
-  --panel-tint:#e0f2f1;
-
-  --hair:#e5e7eb;
-  --shadow:0 2px 6px rgba(0,0,0,.08);
-
-  --ar-font-size:1.9rem;
-  --ar-word-size:1.5rem;
+  --bg:#0b1b1d;
+  --card:#101f22;
+  --ink:#e8f2f2;
+  --ink-dim:#b6c6c6;
+  --accent:#f5b238;
+  --brand:#0b6b61;
+  --error-bg:#ffe9e9;
+  --error-fg:#8b2121;
 }
 
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,ui-sans-serif,system-ui}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans Arabic", Arial, sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
 
-/* ===== Topbar ===== */
 .topbar{
-  position:sticky; top:0; z-index:10;
-  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
-  padding:12px 16px; background:var(--brand); color:#fff;
-  box-shadow:var(--shadow);
+  position:sticky; top:0; z-index:5;
+  display:flex; gap:16px; align-items:center; justify-content:space-between;
+  padding:12px 16px;
+  background:var(--brand);
+  color:#fff;
 }
-.brand{font-weight:800; letter-spacing:.2px}
-.controls{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
-.ctl{display:flex; gap:8px; align-items:center; background:rgba(255,255,255,.12); padding:6px 8px; border-radius:8px}
-.ctl select{border:none; outline:none; background:#fff; color:var(--ink); padding:6px 8px; border-radius:6px; min-width:220px}
-.btn{background:#fff; color:var(--brand-dark); border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; cursor:pointer}
-.btn:hover{filter:brightness(0.98)}
-.status{margin-left:6px}
+.brand{font-weight:700}
+.controls{display:flex; gap:8px; align-items:center}
+select,button{
+  border:0; border-radius:8px;
+  padding:8px 10px; background:#fff; color:#123;
+  font-weight:600;
+}
+button{cursor:pointer}
 
-/* ===== Error ===== */
+#app{max-width:1100px; margin:24px auto; padding:0 16px}
+
 .error{
-  display:block; max-width:960px; margin:14px auto 0;
-  background:#fff0f0; color:#7f1d1d; border:1px solid #fecaca;
-  padding:10px 12px; border-radius:8px;
-}
-.hidden{display:none!important}
-.muted{color:var(--muted)}
-
-/* ===== Layout ===== */
-main{max-width:960px; margin:14px auto; padding:0 12px}
-.footer{max-width:960px; margin:20px auto 40px; padding:0 12px}
-
-/* ===== Surah Header ===== */
-.surah-heading{
-  background:var(--panel-tint);
-  padding:14px;
-  margin:10px 0 18px;
-  border-left:5px solid var(--brand-dark);
-  text-align:center;
-  border-radius:8px;
-}
-
-/* ===== Verse Panel ===== */
-.verse-container{
-  background:var(--panel);
-  border:1px solid var(--hair);
-  padding:16px;
-  margin-bottom:16px;
+  background:var(--error-bg);
+  color:var(--error-fg);
   border-radius:10px;
-  box-shadow:var(--shadow);
+  padding:12px 14px;
+  margin-bottom:16px;
 }
-.verse-container h3{
-  border-bottom:2px solid var(--brand-dark);
-  padding-bottom:8px;
-  margin:0 0 14px;
+.hidden{display:none}
+
+.verse-card{
+  background:var(--card);
+  border-radius:16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.25);
+  padding:18px 18px 6px;
+  margin:18px 0 24px;
 }
 
-/* Ayah Arabic */
-.arabic-text{
-  font-family: 'Amiri','Scheherazade','Noto Sans Arabic',serif;
-  font-size: var(--ar-font-size);
-  direction: rtl;
-  text-align: right;
-  font-weight: 700;
-  color: var(--brand-dark);
-  line-height: 1.7;
+.ayah-title{
+  margin:0 0 10px 0;
+  font-size:14px;
+  color:var(--ink-dim);
+  letter-spacing:.02em;
 }
 
-/* Word rows */
-.word-details-container{
-  display:flex; gap:20px;
-  align-items:flex-start; margin-bottom:14px;
-  flex-wrap:wrap;
+.ayah-ar{
+  direction:rtl;
+  text-align:right;
+  font-family:"Noto Sans Arabic", "Amiri", serif;
+  font-weight:800;
+  font-size:28px;
+  line-height:1.9;
+  padding:12px 10px;
+  border-bottom:1px solid rgba(255,255,255,.08);
 }
 
-/* Left: word card */
-.word-card{
-  border-left:3px solid #009688;
-  padding-left:1rem;
-  flex:1 1 430px;
-  min-width:300px;
-}
-.word-card p{margin:.4rem 0}
-.word-card strong{color:var(--brand-dark)}
-.arabic-text-bold{
-  font-family:'Amiri','Scheherazade','Noto Sans Arabic',serif;
-  font-size:var(--ar-word-size);
-  direction:rtl; text-align:right; font-weight:700; color:var(--brand-dark);
+.words{display:flex; flex-direction:column; gap:14px; padding:14px 4px 20px}
+
+.word-row{
+  display:grid;
+  gap:12px;
+  grid-template-columns: 1.1fr .9fr;
+  align-items:flex-start;
 }
 
-/* Right: related/root */
-.related-info{
-  flex:1 1 260px;
-  min-width:240px;
-  background:var(--panel-tint);
-  padding:10px; border-radius:8px;
-  align-self:stretch;
+.word-main{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;
+  padding:12px;
 }
-.related-info h4{
-  margin:.2rem 0 .5rem;
-  border-bottom:1px dashed var(--brand-dark);
-  padding-bottom:6px; color:var(--brand-dark)
+.word-ar{
+  direction:rtl; text-align:right;
+  font-family:"Noto Sans Arabic", "Amiri", serif;
+  font-size:28px; font-weight:800;
 }
-.related-info ul{list-style:none; margin:0; padding:0}
-.related-info li{margin-bottom:6px; font-size:.95em}
-.related-info .arabic-text{font-size:1.2rem; color:var(--brand-dark)}
+.word-bn{margin-top:4px; color:var(--ink-dim)}
 
-/* Small helpers */
-.kv{margin-top:6px; font-size:.95em}
-.kv b{color:var(--brand-dark)}
+.word-meta{
+  background:rgba(255,255,255,.02);
+  border:1px dashed rgba(255,255,255,.1);
+  border-radius:12px; padding:12px;
+  color:var(--ink-dim);
+}
+.meta-line{margin:4px 0}
+.meta-line strong{color:var(--ink)}
+
+.related{margin-top:8px}
+.related h4{margin:0 0 6px 0; color:var(--ink)}
+.related ul{margin:0; padding-left:18px}
+.related li{margin:4px 0}
+.related .ar{font-family:"Noto Sans Arabic", "Amiri", serif; font-weight:700}
