@@ -1,109 +1,212 @@
-const $ = (sel, ctx = document) => ctx.querySelector(sel);
-const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+/* ============================================================
+   Qur’an Word Explorer
+   - Renders: Surah → Verse → Horizontal Word Cards
+   - Card top (main): Arabic, Bangla meaning, Transliteration, Root, Pattern
+   - Card bottom (derived items): Arabic, Bangla, Transliteration, Pattern
+   - No labels; fixed order per line; compact & scrollable
+   - Filters duplicate derived == main word
+   - Only shows pattern when in our shortlist
+   ============================================================ */
 
-const els = {
-  deckSelect: $('#deckSelect'),
-  reloadBtn: $('#reloadBtn'),
-  errorBox: $('#errorBox'),
-  content: $('#content'),
-  verseTpl: $('#verseTpl'),
-  wordTpl: $('#wordTpl')
+/* --------- Pattern shortlist (display only if in this set) --------- */
+const PATTERN_WHITELIST = new Set([
+  // Nouns/adjectives (templates)
+  "فَعْل", "فَعَل", "فِعْل", "فِعال", "فَعيل", "مِفْعال", "مُفْعِل", "مُفْعَل",
+  "مَفْعَل", "مَفْعُول", "فَعَّال", "فَعول",
+
+  // Verbs (basic)
+  "فَعَلَ", "فَعِلَ", "فَعُلَ",
+
+  // Augmented (common)
+  "فَعَّلَ", "فاعَلَ", "أَفْعَلَ", "تَفَعَّلَ", "تَفاعَلَ", "اِنْفَعَلَ",
+  "اِفْتَعَلَ", "اِسْتَفْعَلَ"
+]);
+
+/* --------- Simple utility renderers --------- */
+const el = (tag, className, html) => {
+  const n = document.createElement(tag);
+  if (className) n.className = className;
+  if (html != null) n.innerHTML = html;
+  return n;
 };
 
-let manifest = [];
-let currentDeck = null;
+// Prefer content if present; else use "—"
+const showOrDash = (s) => (s && String(s).trim().length ? s : "—");
 
-async function fetchJSON(url){
-  const res = await fetch(url, {cache: 'no-store'});
-  if(!res.ok) throw new Error(`HTTP ${res.status} loading ${url}`);
-  return res.json();
-}
+// show pattern only if in whitelist; else dash
+const showPattern = (p) => (p && PATTERN_WHITELIST.has(p) ? p : "—");
 
-function showError(msg){
-  els.errorBox.textContent = msg;
-  els.errorBox.classList.remove('hidden');
-}
-function clearError(){ els.errorBox.classList.add('hidden'); }
+// strip duplicates of derived that equal the main form
+const notSameWord = (main, d) => (d && d.ar && main && main.ar ? d.ar !== main.ar : true);
 
-async function loadManifest(){
-  clearError();
-  try{
-    manifest = await fetchJSON('data/manifest.json');
-    if(!Array.isArray(manifest)) throw new Error('manifest.json must be an array');
-    els.deckSelect.innerHTML = manifest
-      .map(d => `<option value="${d.id}">${d.title}</option>`)
-      .join('');
-    // pick first deck by default
-    currentDeck = manifest[0]?.id || null;
-    if(currentDeck) els.deckSelect.value = currentDeck;
-  }catch(err){
-    showError(err.message);
+/* --------- Data loading ---------
+   This viewer will try to load:
+     /data/manifest.json   -> list of decks
+     /data/<file>.json     -> surah data
+   To make it work offline (file://) or without a server,
+   there’s a minimal fallback dataset defined here.
+----------------------------------------------------------------- */
+const FALLBACK_MANIFEST = [
+  { id: "mulk_full", name: "Al-Mulk (67) — Full", file: "mulk_full.json" }
+];
+
+const FALLBACK_SURA = {
+  surah: 67,
+  name_ar: "سورة الملك",
+  name_bn: "আল-মুলক",
+  verses: [
+    {
+      ayah_id: "67:1",
+      arabic: "تَبَارَكَ الَّذِي بِيَدِهِ ٱلْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
+      bangla: "বরকতময় তিনি—যাঁর হাতে সব কর্তৃত্ব; তিনি সবকিছুর উপর সর্বশক্তিমান।",
+      words: [
+        {
+          ar: "تَبَارَكَ",
+          bn: "বরকতময়",
+          tr: "tabāraka",
+          root: "ب-ر-ك",
+          pattern: "تَفاعَلَ",
+          derived: [
+            { ar: "مُبارَك", bn: "বরকতময়", tr: "mubārak", pattern: "مُفْعَل" },
+            { ar: "بَرَكات", bn: "বরকতসমূহ", tr: "barakāt", pattern: "فَعَلات" }
+          ]
+        },
+        {
+          ar: "ٱلَّذِي",
+          bn: "যিনি",
+          tr: "alladhī",
+          root: "—",
+          pattern: "—",
+          derived: []
+        },
+        {
+          ar: "بِيَدِهِ",
+          bn: "তার হাতে",
+          tr: "bi-yadihi",
+          root: "ي-د",
+          pattern: "—",
+          derived: [
+            { ar: "يَد", bn: "হাত", tr: "yad", pattern: "فَعْل" }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+/* Try to fetch JSON; if fails, use fallback */
+async function safeFetchJSON(url, fallback) {
+  try {
+    const res = await fetch(url, { cache: "no-cache" });
+    if (!res.ok) throw new Error(res.status);
+    return await res.json();
+  } catch {
+    return fallback;
   }
 }
 
-function getDeckById(id){ return manifest.find(d => d.id === id); }
+/* --------- Rendering --------- */
+function renderApp(surahData) {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
 
-async function renderDeck(id){
-  const deck = getDeckById(id);
-  if(!deck){ showError('Deck not found in manifest.'); return; }
-  clearError();
-  els.content.innerHTML = '';
+  // For each verse: sticky-like header + word strip
+  surahData.verses.forEach((v) => {
+    const verse = el("section", "verse");
 
-  let data;
-  try{
-    data = await fetchJSON(deck.src);
-  }catch(err){
-    showError(err.message);
-    return;
-  }
+    // top ayah area
+    const ayah = el("div", "ayah");
+    const ar = el("div", "arabic", v.arabic);
+    const bn = el("div", "bangla", v.bangla || "");
+    ayah.append(ar, bn);
 
-  // Data format (simple): { name_bn, name_ar, verses:[ { verse_number, verse_arabic, words:[{arabic, meaning, root, root_meaning, form, related_words:[{arabic, meaning}]} ] } ] }
-  const verses = (data?.verses) || [];
+    // word strip (horizontal)
+    const strip = el("div", "word-strip");
 
-  verses.forEach(v => {
-    const vNode = els.verseTpl.content.cloneNode(true);
-    $('.ayah-title', vNode).textContent = `আয়াত ${v.verse_number}`;
-    $('.ayah-ar', vNode).textContent = v.verse_arabic || '';
+    v.words.forEach((w) => {
+      const card = el("article", "word-card");
 
-    const wordsWrap = $('.words', vNode);
+      // main box (no labels; fixed order)
+      const main = el("div", "box main-word");
+      const wAr = el("div", "w-ar", showOrDash(w.ar));
+      const line1 = el("div", "line");
+      line1.append(el("div", "bn", showOrDash(w.bn)), el("div", "tr", showOrDash(w.tr)));
 
-    (v.words || []).forEach(w => {
-      const wNode = els.wordTpl.content.cloneNode(true);
-      $('.word-ar', wNode).textContent = w.arabic || '';
-      $('.word-bn', wNode).textContent = w.meaning || '';
+      const line2 = el("div", "line");
+      line2.append(el("div", "root", showOrDash(w.root)), el("div", "pat", showPattern(w.pattern)));
 
-      $('.root', wNode).textContent = w.root || '—';
-      $('.rootMeaning', wNode).textContent = w.root_meaning || '—';
-      $('.form', wNode).textContent = w.form || '—';
+      main.append(wAr, line1, line2);
 
-      const relatedBox = $('.related', wNode);
-      const rel = w.related_words || [];
-      if(rel.length){
-        relatedBox.innerHTML = `
-          <h4>Related / Derivations</h4>
-          <ul>
-            ${rel.map(r => `<li><span class="ar">${r.arabic}</span> — ${r.meaning || ''}</li>`).join('')}
-          </ul>
-        `;
-      }else{
-        relatedBox.innerHTML = '';
+      // derived box
+      const derived = el("div", "box derived");
+      const derivedList = (Array.isArray(w.derived) ? w.derived : []).filter(d => notSameWord(w, d));
+
+      if (!derivedList.length) {
+        // keep compact; empty derived still gets a small placeholder divider so heights are consistent
+        derived.append(el("div", "der-item", el("div", "der-row", "—")));
+      } else {
+        derivedList.forEach((d) => {
+          const item = el("div", "der-item");
+          item.append(
+            el("div", "der-ar", showOrDash(d.ar)),
+            (() => {
+              const r = el("div", "der-row");
+              r.append(
+                el("div", "bn", showOrDash(d.bn)),
+                el("div", "tr", showOrDash(d.tr))
+              );
+              return r;
+            })(),
+            (() => {
+              const r = el("div", "der-row");
+              // keep root out of derived (by your spec), only the pattern line
+              r.append(
+                el("div", "pat", showPattern(d.pattern))
+              );
+              return r;
+            })()
+          );
+          derived.append(item);
+        });
       }
-      wordsWrap.appendChild(wNode);
+
+      card.append(main, derived);
+      strip.append(card);
     });
 
-    els.content.appendChild(vNode);
+    verse.append(ayah, strip);
+    app.append(verse);
   });
 }
 
-els.deckSelect.addEventListener('change', async (e) => {
-  currentDeck = e.target.value;
-  await renderDeck(currentDeck);
-});
-els.reloadBtn.addEventListener('click', async () => {
-  if(currentDeck) await renderDeck(currentDeck);
-});
-
+/* --------- boot --------- */
 (async function init(){
-  await loadManifest();
-  if(currentDeck) await renderDeck(currentDeck);
+  const select = document.getElementById("surahSelect");
+  const reloadBtn = document.getElementById("reloadBtn");
+
+  // Load manifest
+  const manifest = await safeFetchJSON("./data/manifest.json", FALLBACK_MANIFEST);
+
+  // populate dropdown
+  select.innerHTML = "";
+  manifest.forEach((m, i) => {
+    const opt = document.createElement("option");
+    opt.value = m.file || m.id;
+    opt.textContent = m.name || m.id;
+    if (i === 0) opt.selected = true;
+    select.appendChild(opt);
+  });
+
+  async function loadSelected() {
+    const chosen = select.value;
+    const file = chosen.endsWith(".json") ? chosen : `${chosen}.json`;
+    const data = await safeFetchJSON(`./data/${file}`, FALLBACK_SURA);
+    renderApp(data);
+  }
+
+  reloadBtn.addEventListener("click", loadSelected);
+  select.addEventListener("change", loadSelected);
+
+  // first load
+  await loadSelected();
 })();
