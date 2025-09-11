@@ -1,3 +1,8 @@
 [
-  { "id": "mulk_full", "name": "Al-Mulk (67) — Full", "file": "mulk_full.json" }
+  {
+    "id": "mulk-full",
+    "name": "Al-Mulk (67) — Full",
+    "json": "data/mulk_full.json",
+    "mode": "full"
+  }
 ]
