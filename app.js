@@ -8,11 +8,7 @@ const els = {
   deckSelect: document.getElementById('deckSelect'),
   reloadBtn: document.getElementById('reloadBtn'),
   alert: document.getElementById('alert'),
-  ayahHeader: document.getElementById('ayahHeader'),
-  ayahArabic: document.getElementById('ayahArabic'),
-  ayahBangla: document.getElementById('ayahBangla'),
-  scroller: document.getElementById('cardsScroller'),
-  cards: document.getElementById('cards')
+  versesContainer: document.getElementById('versesContainer')
 };
 
 function showAlert(msg){
@@ -36,7 +32,7 @@ async function loadManifest(){
     });
     state.currentDeck = state.manifest[0]?.id || null;
   }catch(err){
-    showAlert(`Failed to load manifest.json – ${err.message}`);
+    showAlert(`Failed to load manifest.json — ${err.message}`);
     throw err;
   }
 }
@@ -51,19 +47,61 @@ async function loadDeck(){
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     state.data = await res.json();
 
-    renderAyah(state.data.verses[0]);  // first ayah only for now
-    renderCards(state.data.verses[0]);
+    renderAllVerses(state.data.verses);
   }catch(err){
-    showAlert(`Failed to load ${deck.json} – ${err.message}`);
+    showAlert(`Failed to load ${deck.json} — ${err.message}`);
     console.error(err);
   }
 }
 
-function renderAyah(ayah){
-  if(!ayah){ els.ayahHeader.hidden = true; return; }
-  els.ayahArabic.textContent = ayah.arabic || '';
-  els.ayahBangla.textContent = ayah.bangla || '';
-  els.ayahHeader.hidden = false;
+function renderAllVerses(verses){
+  els.versesContainer.innerHTML = '';
+  if(!verses || !Array.isArray(verses)){ 
+    showAlert('No verses found in the data.');
+    return; 
+  }
+
+  verses.forEach(verse => {
+    const verseSection = document.createElement('div');
+    verseSection.className = 'verse-section';
+    
+    // Create ayah header (verse + translation)
+    const ayahHeader = document.createElement('section');
+    ayahHeader.className = 'ayah-header';
+    
+    const ayahNumber = document.createElement('div');
+    ayahNumber.className = 'ayah-number';
+    ayahNumber.textContent = `آیت ${verse.ayah_id || ''}`;
+    ayahHeader.appendChild(ayahNumber);
+    
+    const ayahArabic = document.createElement('div');
+    ayahArabic.className = 'ayah-ar';
+    ayahArabic.textContent = verse.arabic || '';
+    ayahHeader.appendChild(ayahArabic);
+    
+    const ayahBangla = document.createElement('div');
+    ayahBangla.className = 'ayah-bn';
+    ayahBangla.textContent = verse.bangla || '';
+    ayahHeader.appendChild(ayahBangla);
+    
+    // Create word cards scroller
+    const cardsScroller = document.createElement('section');
+    cardsScroller.className = 'cards-scroller';
+    
+    const cards = document.createElement('div');
+    cards.className = 'cards';
+    
+    renderWordsIntoContainer(verse.words || [], cards);
+    
+    cardsScroller.appendChild(cards);
+    
+    // Add to verse section
+    verseSection.appendChild(ayahHeader);
+    verseSection.appendChild(cardsScroller);
+    
+    // Add to main container
+    els.versesContainer.appendChild(verseSection);
+  });
 }
 
 function chip(text){
@@ -73,11 +111,11 @@ function chip(text){
   return span;
 }
 
-function renderCards(ayah){
-  els.cards.innerHTML = '';
-  if(!ayah || !Array.isArray(ayah.words)){ els.scroller.hidden = true; return; }
+function renderWordsIntoContainer(words, container){
+  container.innerHTML = '';
+  if(!Array.isArray(words)) return;
 
-  ayah.words.forEach(w=>{
+  words.forEach(w=>{
     const card = document.createElement('div');
     card.className = 'card';
 
@@ -138,10 +176,8 @@ function renderCards(ayah){
     });
 
     card.appendChild(derivedBox);
-    els.cards.appendChild(card);
+    container.appendChild(card);
   });
-
-  els.scroller.hidden = false;
 }
 
 els.deckSelect.addEventListener('change', e=>{
