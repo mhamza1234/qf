@@ -1,31 +1,40 @@
 {
-  "name_bn": "সূরা আল-মুলক",
+  "surah": 67,
   "name_ar": "سورة الملك",
+  "name_bn": "আল-মুলক",
   "verses": [
     {
-      "verse_number": 1,
-      "verse_arabic": "تَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
+      "ayah_id": "67:1",
+      "arabic": "تَبَارَكَ الَّذِي بِيَدِهِ ٱلْمُلْكُ ...",
+      "bangla": "বরকতময় তিনি — ...",
       "words": [
         {
-          "arabic": "تَبَارَكَ",
-          "meaning": "বরকতময়",
+          "ar": "تَبَارَكَ",
+          "bn": "বরকতময়",
+          "tr": "tabāraka",
           "root": "ب-ر-ك",
-          "root_meaning": "বরকত/কল্যাণ/বৃদ্ধি",
-          "form": "فعل ماضٍ",
-          "related_words": [
-            {"arabic": "مُبَارَكٌ", "meaning": "বরকতময়"},
-            {"arabic": "بَرَكَاتٌ", "meaning": "বরকতসমূহ"}
+          "pattern": "تَفاعَلَ",
+          "derived": [
+            { "ar": "مُبارَك", "bn": "বরকতময়", "tr": "mubārak", "pattern": "مُفْعَل" },
+            { "ar": "بَرَكات", "bn": "বরকতসমূহ", "tr": "barakāt", "pattern": "فَعَلات" }
           ]
         },
+
+        /* ... more words ... */
+
         {
-          "arabic": "الَّذِي",
-          "meaning": "যিনি",
-          "root": "",
-          "root_meaning": "",
-          "form": "اسم موصول",
-          "related_words": []
+          "ar": "قَدِيرٌ",
+          "bn": "সর্বশক্তিমান",
+          "tr": "qadīrun",
+          "root": "ق-د-ر",
+          "pattern": "فَعيل",
+          "derived": [
+            { "ar": "قُدرة", "bn": "ক্ষমতা", "tr": "qudrah", "pattern": "فُعْلة" }
+          ]
         }
       ]
     }
+
+    /* add ayah 2..N with same structure */
   ]
 }
