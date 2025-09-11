@@ -1,50 +1,34 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="bn" dir="ltr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Qur’an Word Explorer</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="topbar">
-    <h1>Qur’an Word Explorer</h1>
+    <div class="brand">Qur’an Word Explorer</div>
     <div class="controls">
-      <label>সুরা:</label>
-      <select id="deckSelect">
-        <option>লোড হচ্ছে…</option>
-      </select>
+      <label for="deckSelect">সূরা:</label>
+      <select id="deckSelect" aria-label="Surah selector"></select>
       <button id="reloadBtn">Reload</button>
     </div>
   </header>
 
   <main id="app">
-    <section id="ayahHeader" class="ayah-header">
-      <div class="ayah-ar" id="ayahAr">‎</div>
-      <div class="ayah-bn" id="ayahBn">‎</div>
+    <div id="alert" class="alert" hidden></div>
+
+    <section id="ayahHeader" class="ayah-header" hidden>
+      <div id="ayahArabic" class="ayah-ar"></div>
+      <div id="ayahBangla" class="ayah-bn"></div>
     </section>
 
-    <section class="cards-scroller" id="cardsScroller" aria-label="Word cards"></section>
+    <section id="cardsScroller" class="cards-scroller" hidden>
+      <div id="cards" class="cards"></div>
+    </section>
   </main>
 
-  <template id="wordCardTpl">
-    <article class="word-card">
-      <div class="main-word">
-        <div class="word-ar" data-field="ar"></div>
-        <div class="word-bn" data-field="bn"></div>
-        <div class="meta-row">
-          <span class="word-tr" data-field="tr"></span>
-          <span class="word-root" data-field="root"></span>
-          <span class="word-pattern" data-field="pattern"></span>
-        </div>
-      </div>
-      <div class="derived-list" data-field="derived"></div>
-    </article>
-  </template>
-
-  <script src="app.js"></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
