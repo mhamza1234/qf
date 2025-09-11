@@ -35,9 +35,18 @@ button:hover{filter:brightness(1.1);cursor:pointer}
 
 .alert{background:#3a0b0b;color:#ffdcdc;border:1px solid #642; padding:.75rem 1rem;border-radius:.5rem;margin:.75rem 0}
 
+/* Verse container */
+.verse-section{
+  margin-bottom:2rem;
+}
+
 .ayah-header{
   background:var(--panel);border:1px solid var(--border);border-radius:.75rem;
-  padding:1rem 1.25rem;margin:.75rem 0
+  padding:1rem 1.25rem;margin:.75rem 0;
+  position:sticky;top:4rem;z-index:5;
+}
+.ayah-number{
+  color:var(--accent);font-weight:600;font-size:.9rem;margin-bottom:.5rem;
 }
 .ayah-ar{
   font-family: "Scheherazade", "Amiri", serif;
@@ -48,7 +57,8 @@ button:hover{filter:brightness(1.1);cursor:pointer}
 
 .cards-scroller{
   overflow-x:auto; overflow-y:hidden;
-  border:1px solid var(--border); border-radius:.75rem; background:var(--panel)
+  border:1px solid var(--border); border-radius:.75rem; background:var(--panel);
+  margin-bottom:1rem;
 }
 .cards{display:flex; gap:.75rem; padding:1rem; min-height:320px}
 
@@ -89,3 +99,9 @@ button:hover{filter:brightness(1.1);cursor:pointer}
 .derived-ar{font-family:"Scheherazade","Amiri",serif; font-size:1.4rem; direction:rtl}
 .derived-bn{color:var(--ink)}
 .derived-meta{display:flex; gap:.4rem; flex-wrap:wrap}
+
+/* Scrollbar styling for word cards */
+.cards::-webkit-scrollbar{height:8px}
+.cards::-webkit-scrollbar-track{background:var(--panel)}
+.cards::-webkit-scrollbar-thumb{background:var(--chip);border-radius:4px}
+.cards::-webkit-scrollbar-thumb:hover{background:var(--muted)}
