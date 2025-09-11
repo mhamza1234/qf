@@ -1,14 +1,12 @@
 [
   {
-    "id": "67-full",
-    "display": "Al-Mulk (67) — Full",
-    "filename": "mulk_full.json"
+    "id": "mulk-full",
+    "title": "Al-Mulk (67) — Full",
+    "src": "data/mulk_full.json"
+  },
+  {
+    "id": "mulk-audio-tajweed",
+    "title": "Al-Mulk (67) — Major Words + Audio",
+    "src": "data/mulk_audio_tajweed.json"
   }
-  /* Add more entries like:
-  ,{
-    "id": "001-full",
-    "display": "Al-Fātiḥah (1) — Full",
-    "filename": "fatiha_full.json"
-  }
-  */
 ]
