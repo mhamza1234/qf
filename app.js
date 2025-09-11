@@ -1,112 +1,160 @@
-// utilities
-const $ = (q, el=document) => el.querySelector(q);
-const $$ = (q, el=document) => [...el.querySelectorAll(q)];
+const state = {
+  manifest: null,
+  currentDeck: null,
+  data: null
+};
 
-const deckSelect = $('#deckSelect');
-const reloadBtn  = $('#reloadBtn');
-const ayahArEl   = $('#ayahAr');
-const ayahBnEl   = $('#ayahBn');
-const scroller   = $('#cardsScroller');
-const tpl        = $('#wordCardTpl');
+const els = {
+  deckSelect: document.getElementById('deckSelect'),
+  reloadBtn: document.getElementById('reloadBtn'),
+  alert: document.getElementById('alert'),
+  ayahHeader: document.getElementById('ayahHeader'),
+  ayahArabic: document.getElementById('ayahArabic'),
+  ayahBangla: document.getElementById('ayahBangla'),
+  scroller: document.getElementById('cardsScroller'),
+  cards: document.getElementById('cards')
+};
 
-const PATTERNS_WHITELIST = new Set([
-  "فَعَلَ","فَعِلَ","فَعُلَ","أَفْعَلَ","فَعَّلَ","فَاعَلَ","تَفَعَّلَ","تَفَاعَلَ",
-  "اِنْفَعَلَ","اِفْتَعَلَ","اِسْتَفْعَلَ","تَفْعِيل","مُفَاعَل","فُعَّال","فَعَلَات"
-]);
+function showAlert(msg){
+  els.alert.textContent = msg;
+  els.alert.hidden = false;
+}
+function hideAlert(){ els.alert.hidden = true; }
 
 async function loadManifest(){
-  const r = await fetch('data/manifest.json');
-  if(!r.ok) throw new Error('manifest load failed');
-  return r.json();
+  hideAlert();
+  try{
+    const res = await fetch('data/manifest.json', { cache: 'no-store' });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    state.manifest = await res.json();
+
+    els.deckSelect.innerHTML = '';
+    state.manifest.forEach(d=>{
+      const opt = document.createElement('option');
+      opt.value = d.id; opt.textContent = d.name;
+      els.deckSelect.appendChild(opt);
+    });
+    state.currentDeck = state.manifest[0]?.id || null;
+  }catch(err){
+    showAlert(`Failed to load manifest.json – ${err.message}`);
+    throw err;
+  }
 }
 
-function fillDecks(decks){
-  deckSelect.innerHTML = '';
-  decks.forEach(d => {
-    const o = document.createElement('option');
-    o.value = d.json;
-    o.textContent = d.name;
-    deckSelect.appendChild(o);
-  });
-}
+async function loadDeck(){
+  hideAlert();
+  const deck = state.manifest.find(d=>d.id===state.currentDeck);
+  if(!deck){ showAlert('No deck selected.'); return; }
 
-async function loadSurah(url){
-  const r = await fetch(url);
-  if(!r.ok) throw new Error('surah json load failed');
-  return r.json();
+  try{
+    const res = await fetch(deck.json, { cache: 'no-store' });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    state.data = await res.json();
+
+    renderAyah(state.data.verses[0]);  // first ayah only for now
+    renderCards(state.data.verses[0]);
+  }catch(err){
+    showAlert(`Failed to load ${deck.json} – ${err.message}`);
+    console.error(err);
+  }
 }
 
 function renderAyah(ayah){
-  ayahArEl.textContent = ayah.arabic || '';
-  ayahBnEl.textContent = ayah.bn || '';
+  if(!ayah){ els.ayahHeader.hidden = true; return; }
+  els.ayahArabic.textContent = ayah.arabic || '';
+  els.ayahBangla.textContent = ayah.bangla || '';
+  els.ayahHeader.hidden = false;
 }
 
-function makeDerivedItem(dw){
-  // normalize + filter patterns to our short list
-  const patt = (dw.pattern || '').trim();
-  const pattOk = PATTERNS_WHITELIST.has(patt) ? patt : '';
-  const div = document.createElement('div');
-  div.className = 'derived-item';
-  div.innerHTML = `
-    <div class="ar">${dw.ar || ''}</div>
-    <div class="bn">${dw.bn || ''}</div>
-    <div class="meta">
-      <span>${dw.tr || ''}</span>
-      ${pattOk ? `<span>${pattOk}</span>` : ''}
-    </div>`;
-  return div;
+function chip(text){
+  const span = document.createElement('span');
+  span.className = 'chip';
+  span.textContent = text;
+  return span;
 }
 
-function makeWordCard(w){
-  const node = tpl.content.firstElementChild.cloneNode(true);
-  node.querySelector('[data-field="ar"]').textContent = w.ar || '';
-  node.querySelector('[data-field="bn"]').textContent = w.bn || '';
-  node.querySelector('[data-field="tr"]').textContent = w.tr || '';
-  node.querySelector('[data-field="root"]').textContent = w.root || '';
-  node.querySelector('[data-field="pattern"]').textContent =
-    PATTERNS_WHITELIST.has((w.pattern||'').trim()) ? w.pattern : '';
+function renderCards(ayah){
+  els.cards.innerHTML = '';
+  if(!ayah || !Array.isArray(ayah.words)){ els.scroller.hidden = true; return; }
 
-  const list = node.querySelector('[data-field="derived"]');
-  (w.derived || [])
-    .filter(dw => dw.ar !== w.ar) // do not repeat the main word
-    .forEach(dw => list.appendChild(makeDerivedItem(dw)));
-  return node;
+  ayah.words.forEach(w=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    // Top box (main word)
+    const main = document.createElement('div');
+    main.className = 'main';
+
+    const ar = document.createElement('div');
+    ar.className = 'word-ar';
+    ar.textContent = w.ar || '';
+    main.appendChild(ar);
+
+    const bn = document.createElement('div');
+    bn.className = 'word-bn';
+    bn.textContent = w.bn || '';
+    main.appendChild(bn);
+
+    const meta = document.createElement('div');
+    meta.className = 'word-meta';
+    if(w.tr) meta.appendChild(chip(w.tr));
+    if(w.root) meta.appendChild(chip(w.root));
+    if(w.pattern) meta.appendChild(chip(w.pattern));
+    main.appendChild(meta);
+
+    card.appendChild(main);
+
+    // Bottom box (derived)
+    const derivedBox = document.createElement('div');
+    derivedBox.className = 'derived';
+
+    (w.derived || []).forEach(d=>{
+      const item = document.createElement('div');
+      item.className = 'derived-item';
+
+      const rowTop = document.createElement('div');
+      rowTop.className = 'derived-row';
+
+      const dAr = document.createElement('div');
+      dAr.className = 'derived-ar';
+      dAr.textContent = d.ar || '';
+
+      const dBn = document.createElement('div');
+      dBn.className = 'derived-bn';
+      dBn.textContent = d.bn || '';
+
+      rowTop.appendChild(dAr);
+      rowTop.appendChild(dBn);
+
+      const rowMeta = document.createElement('div');
+      rowMeta.className = 'derived-meta';
+      if(d.tr) rowMeta.appendChild(chip(d.tr));
+      if(d.pattern) rowMeta.appendChild(chip(d.pattern));
+
+      item.appendChild(rowTop);
+      item.appendChild(rowMeta);
+
+      derivedBox.appendChild(item);
+    });
+
+    card.appendChild(derivedBox);
+    els.cards.appendChild(card);
+  });
+
+  els.scroller.hidden = false;
 }
 
-function renderWords(words){
-  scroller.innerHTML = '';
-  words.forEach(w => scroller.appendChild(makeWordCard(w)));
-}
-
-async function boot(){
-  try{
-    const decks = await loadManifest();
-    fillDecks(decks);
-
-    const firstJson = deckSelect.value || (decks[0] && decks[0].json);
-    if(firstJson){
-      const data = await loadSurah(firstJson);
-      const firstAyah = data?.surah?.verses?.[0];
-      if(firstAyah){
-        renderAyah(firstAyah);
-        renderWords(firstAyah.words || []);
-      }
-    }
-  }catch(e){
-    console.error(e);
-    alert('Load error: ' + e.message);
-  }
-}
-
-deckSelect.addEventListener('change', async () => {
-  const data = await loadSurah(deckSelect.value);
-  const firstAyah = data?.surah?.verses?.[0];
-  if(firstAyah){
-    renderAyah(firstAyah);
-    renderWords(firstAyah.words || []);
-  }
+els.deckSelect.addEventListener('change', e=>{
+  state.currentDeck = e.target.value;
+  loadDeck();
 });
+els.reloadBtn.addEventListener('click', ()=> loadDeck() );
 
-reloadBtn.addEventListener('click', boot);
-
-boot();
+(async function init(){
+  try{
+    await loadManifest();
+    await loadDeck();
+  }catch(e){
+    // already shown
+  }
+})();
