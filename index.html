@@ -3,29 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Qur’an Word Explorer</title>
+  <title>Qur'an Word Explorer</title>
+
+  <!-- Fonts: Arabic + Latin/Bangla -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&family=Roboto:wght@400;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <h1 class="app-title">Qur’an Word Explorer</h1>
+      <h1 class="app-title">Qur'an Word Explorer</h1>
 
-      <!-- Deck / Surah selector -->
-      <div class="deck-picker">
-        <label for="deckSelect" class="sr-only">Select Surah/Deck</label>
-        <select id="deckSelect" aria-label="Select Surah/Deck"></select>
+      <div class="controls">
+        <label for="surahSelect" class="sr-only">Select Surah</label>
+        <select id="surahSelect" aria-label="Select Surah"></select>
       </div>
     </div>
-    <div id="status" class="status"></div>
   </header>
 
-  <main class="container">
-    <section id="surahHeader" class="surah-header" aria-live="polite"></section>
+  <main class="container" id="app">
+    <!-- Surah header -->
+    <section id="surahHeader" class="surah-header" aria-live="polite">
+      <!-- Filled by JS -->
+    </section>
 
-    <section id="verses" class="verses"></section>
+    <!-- Verses go here -->
+    <section id="verses" class="verses">
+      <!-- Filled by JS -->
+    </section>
   </main>
 
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <small>© <span id="year"></span> Qur'an Word Explorer</small>
+    </div>
+  </footer>
+
   <script src="app.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
