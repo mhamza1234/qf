@@ -3,25 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Qur'an Word Explorer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Scheherazade:wght@400;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css" />
+  <title>Qur’an Word Explorer</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">Qur'an Word Explorer</div>
+    <h1 class="brand">Qur’an Word Explorer</h1>
+
     <div class="controls">
-      <label for="deckSelect">টাইপ:</label>
-      <select id="deckSelect" aria-label="Type selector"></select>
-      <button id="reloadBtn" type="button">Reload</button>
+      <label class="sr-only" for="deck">সূরা নির্বাচন</label>
+      <div class="select-wrap">
+        <span class="select-label">সূরা:</span>
+        <select id="deck"></select>
+      </div>
+      <button id="reloadBtn" type="button" class="btn">Reload</button>
     </div>
   </header>
 
-  <main id="app">
-    <div id="alert" class="alert" hidden></div>
-    <div id="versesContainer"></div>
+  <main id="app" class="app" aria-live="polite">
+    <!-- Populated by app.js -->
   </main>
 
-  <script src="./app.js" defer></script>
+  <footer class="footnote">
+    <small>Tip: স্ক্রল করে কার্ড দেখুন • কার্ডে ট্যাব/এন্টার করলে বিস্তারিত টগল হবে</small>
+  </footer>
+
+  <script src="app.js" defer></script>
 </body>
 </html>
