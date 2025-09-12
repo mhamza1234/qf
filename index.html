@@ -1,37 +1,55 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bn" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Quran Word Explorer</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Qur’an Word Explorer</title>
+
+  <!-- Preload manifest to avoid stale caches -->
+  <link rel="preload" href="./manifest.json" as="fetch" crossorigin="anonymous">
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <header class="site-header">
-    <div class="wrap">
-      <h1 class="brand">Quran Word Explorer</h1>
-      <div class="deck-picker">
-        <label for="deckSelect" class="sr-only">Choose deck</label>
-        <select id="deckSelect" aria-label="Choose deck"></select>
+    <div class="container header-inner">
+      <h1 class="brand">Qur’an Word Explorer</h1>
+
+      <div class="controls">
+        <label for="surahSelect" class="sr-only">Choose set</label>
+        <select id="surahSelect" class="select"></select>
+        <button id="reloadBtn" class="btn" title="Reload without cache">Reload</button>
       </div>
     </div>
   </header>
 
-  <main id="app">
-    <div id="alert" class="alert" hidden></div>
-
-    <!-- Injected per-surah -->
-    <section id="surahRoot" class="surah-root" aria-live="polite"></section>
+  <main id="main" class="container">
+    <section id="meta" class="meta"></section>
+    <section id="content" class="content"></section>
   </main>
 
-  <footer class="site-footer">
-    <div class="wrap">
-      <small>Built for long-form study — responsive, accessible, bilingual (RTL/LTR).</small>
-    </div>
-  </footer>
+  <template id="verseTpl">
+    <article class="verse">
+      <p class="ayah-ar" lang="ar" dir="rtl"></p>
+      <p class="ayah-bn" lang="bn" dir="ltr"></p>
+      <div class="words" role="list"></div>
+    </article>
+  </template>
 
-  <script src="app.js" defer></script>
+  <template id="wordCardTpl">
+    <div class="word-card" role="listitem" tabindex="0" aria-expanded="false">
+      <div class="word-main">
+        <span class="w-ar" lang="ar" dir="rtl"></span>
+        <span class="w-bn" lang="bn" dir="ltr"></span>
+      </div>
+      <div class="word-meta">
+        <span class="w-tr"></span>
+        <span class="w-root"></span>
+        <span class="w-pattern"></span>
+      </div>
+      <div class="derived"></div>
+    </div>
+  </template>
+
+  <script defer src="./app.js"></script>
 </body>
 </html>
