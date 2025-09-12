@@ -1,157 +1,155 @@
-/* ------------------------------
-   Config & helpers
------------------------------- */
-const MANIFEST_URL = './manifest.json';
-const qs = (s, r = document) => r.querySelector(s);
-const qsa = (s, r = document) => [...r.querySelectorAll(s)];
+/* ===== Utilities ===== */
 
-const withNoStore = (url) => {
-  // Honor existing query; add a cache-buster to be safe on GH Pages
-  const u = new URL(url, location.href);
-  u.searchParams.set('nocache', Date.now().toString());
-  return u.toString();
+const $ = (sel, ctx = document) => ctx.querySelector(sel);
+const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+
+const el = (tag, cls, html) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html != null) n.innerHTML = html;
+  return n;
 };
 
-function showFatalMessage(msg) {
-  const host = qs('#content') || document.body;
-  const box = document.createElement('div');
-  box.style.padding = '12px';
-  box.style.margin = '16px auto';
-  box.style.maxWidth = '820px';
-  box.style.border = '1px solid #f3c2c2';
-  box.style.background = '#fff4f4';
-  box.style.color = '#9b1c1c';
-  box.textContent = msg;
-  host.prepend(box);
-}
+const fetchJson = (path) => fetch(path, { cache: "no-store" }).then(r => {
+  if (!r.ok) throw new Error(`HTTP ${r.status} for ${path}`);
+  return r.json();
+});
 
-/* ------------------------------
-   Load manifest & data
------------------------------- */
-async function loadManifest() {
-  const res = await fetch(withNoStore(MANIFEST_URL), { cache: 'no-store' });
-  if (!res.ok) throw new Error(`HTTP ${res.status} loading manifest`);
-  return res.json();
-}
+/* ===== State ===== */
 
-async function loadData(pathFromManifest) {
-  const res = await fetch(withNoStore(pathFromManifest), { cache: 'no-store' });
-  if (!res.ok) throw new Error(`HTTP ${res.status} loading ${pathFromManifest}`);
-  return res.json();
-}
+let decks = [];
+let currentDeck = null;
 
-/* ------------------------------
-   Rendering
------------------------------- */
-function renderMeta(metaEl, data) {
-  metaEl.innerHTML = `
-    <h2 lang="ar" dir="rtl">${data.name_ar ?? ''}</h2>
-    <h3 lang="bn" dir="ltr">${data.name_bn ?? ''}</h3>
-  `;
-}
+/* ===== Bootstrap ===== */
 
-function renderSurah(contentEl, data) {
-  contentEl.innerHTML = ''; // clear
+document.addEventListener('DOMContentLoaded', async () => {
+  const root = $('#root');
+  root.innerHTML = $('#spinnerTpl').innerHTML;
 
-  const verseTpl = qs('#verseTpl');
-  const wordTpl  = qs('#wordCardTpl');
+  try {
+    decks = await fetchJson('data/manifest.json');
+    populateDeckSelect(decks);
+    const first = decks[0];
+    if (first) {
+      $('#deckSelect').value = first.id;
+      await loadDeck(first);
+    } else {
+      root.textContent = 'No decks found in data/manifest.json';
+    }
+  } catch (e) {
+    console.error(e);
+    root.innerHTML = `<div class="spinner-wrap" style="color:#a33">Could not load manifest. Check file path & hosting.</div>`;
+  }
 
-  (data.verses || []).forEach(v => {
-    const node = verseTpl.content.cloneNode(true);
-    const ar = qs('.ayah-ar', node);
-    const bn = qs('.ayah-bn', node);
-    const list = qs('.words', node);
+  $('#deckSelect').addEventListener('change', async (e) => {
+    const deck = decks.find(d => d.id === e.target.value);
+    if (deck) await loadDeck(deck);
+  });
 
-    ar.textContent = v.arabic || '';
-    bn.textContent = v.bangla || '';
+  $('#reloadBtn').addEventListener('click', async () => {
+    if (currentDeck) await loadDeck(currentDeck);
+  });
+});
 
-    (v.words || []).forEach(w => {
-      const wNode = wordTpl.content.cloneNode(true);
+/* ===== UI wiring ===== */
 
-      qs('.w-ar', wNode).textContent = w.ar || '';
-      qs('.w-bn', wNode).textContent = w.bn || '';
-      qs('.w-tr', wNode).textContent = w.tr ? w.tr : '';
-
-      const root = w.root ? `\u200E${w.root}\u200E` : ''; // keep neutral direction
-      const pattern = w.pattern || '';
-
-      qs('.w-root', wNode).textContent = root;
-      qs('.w-pattern', wNode).textContent = pattern;
-
-      // Derived list
-      const dWrap = qs('.derived', wNode);
-      dWrap.innerHTML = '';
-      if (Array.isArray(w.derived) && w.derived.length) {
-        w.derived.forEach(d => {
-          const row = document.createElement('span');
-          row.innerHTML = `
-            <span class="d-ar" lang="ar" dir="rtl">${d.ar ?? ''}</span>
-            <span class="d-right">
-              <span class="d-bn" lang="bn" dir="ltr">${d.bn ?? ''}</span>
-              <span class="pill">${d.tr ? d.tr : ''}</span>
-              <span class="pill">${d.pattern ?? ''}</span>
-            </span>
-          `;
-          dWrap.appendChild(row);
-        });
-      } else {
-        // if none, hide the divider space
-        dWrap.style.display = 'none';
-      }
-
-      list.appendChild(wNode);
-    });
-
-    contentEl.appendChild(node);
+function populateDeckSelect(list){
+  const sel = $('#deckSelect');
+  sel.innerHTML = '';
+  list.forEach(d => {
+    const opt = el('option', null, d.name);
+    opt.value = d.id;
+    sel.appendChild(opt);
   });
 }
 
-/* ------------------------------
-   Init
------------------------------- */
-async function init() {
-  const metaEl = qs('#meta');
-  const contentEl = qs('#content');
-  const selectEl = qs('#surahSelect');
-  const reloadBtn = qs('#reloadBtn');
+async function loadDeck(deck){
+  currentDeck = deck;
+  const root = $('#root');
+  root.innerHTML = $('#spinnerTpl').innerHTML;
 
-  try {
-    const manifest = await loadManifest();
-
-    // Populate selector
-    selectEl.innerHTML = manifest.map(m => `
-      <option value="${m.id}">${m.name}</option>
-    `).join('');
-
-    // Load first by default
-    const first = manifest[0];
-    if (!first) throw new Error('Manifest is empty.');
-    await loadAndRender(first);
-
-    // Change handler
-    selectEl.addEventListener('change', async (e) => {
-      const id = e.target.value;
-      const sel = manifest.find(x => x.id === id);
-      if (sel) await loadAndRender(sel);
-    });
-
-    // Reload (cache-bypass)
-    reloadBtn.addEventListener('click', async () => {
-      const id = selectEl.value;
-      const sel = manifest.find(x => x.id === id) || manifest[0];
-      await loadAndRender(sel, /*force*/ true);
-    });
-
-    async function loadAndRender(entry, force = false) {
-      const data = await loadData(entry.json + (force ? `?r=${Date.now()}` : ''));
-      renderMeta(metaEl, data);
-      renderSurah(contentEl, data);
-    }
-
-  } catch (err) {
-    console.error(err);
-    showFatalMessage('Could not load manifest. Ensure <code>manifest.json</code> is at the site root and paths inside it are correct.');
+  try{
+    const data = await fetchJson(deck.json); // expects { verses: [...] }
+    renderSurah(root, deck, data);
+  }catch(e){
+    console.error(e);
+    root.innerHTML = `<div class="spinner-wrap" style="color:#a33">Could not load ${deck.json}. Check path & JSON validity.</div>`;
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+/* ===== Rendering ===== */
+
+function renderSurah(root, deck, data){
+  const frag = document.createDocumentFragment();
+
+  (data.verses || []).forEach(v => {
+    frag.appendChild(renderVerse(v));
+  });
+
+  root.innerHTML = '';
+  root.appendChild(frag);
+}
+
+function renderVerse(verse){
+  const ayahNo = (verse.ayah_id || '').split(':')[1] || '';
+
+  const sec = el('section', 'verse');
+
+  const head = el('header', 'verse-head');
+  head.innerHTML = `
+    <span class="ayah-badge" aria-label="Ayah">${ayahNo}</span>
+    <p class="ayah-arabic clamp" dir="rtl" lang="ar">${safe(verse.arabic)}</p>
+    <p class="ayah-bangla clamp" dir="ltr" lang="bn">${safe(verse.bangla)}</p>
+  `;
+  sec.appendChild(head);
+
+  const lane = el('div', 'word-lane');
+  (verse.words || []).forEach(w => lane.appendChild(renderWordCard(w)));
+  sec.appendChild(lane);
+
+  return sec;
+}
+
+function renderWordCard(w){
+  const hasDerived = Array.isArray(w.derived) && w.derived.length > 0;
+
+  const card = el('article', `word-card ${!hasDerived ? 'word-card--no-derived' : ''}`);
+
+  // MAIN
+  const main = el('div', 'word-card__main');
+  main.appendChild(el('div','word-card__arabic', safe(w.ar)));
+  main.appendChild(el('div','word-mean', safe(w.bn)));
+
+  const chips = el('div','chips');
+  if (w.tr) chips.appendChild(chip(safe(w.tr)));
+  if (w.root) chips.appendChild(chip(safe(w.root), 'ar'));
+  if (w.pattern) chips.appendChild(chip(safe(w.pattern), 'ar'));
+  main.appendChild(chips);
+
+  card.appendChild(main);
+
+  // DERIVED
+  if (hasDerived){
+    const derivedWrap = el('div','word-card__derived');
+    w.derived.forEach(d => {
+      const row = el('div','derived-row');
+      if (d.ar) row.appendChild(chip(safe(d.ar), 'ar'));
+      if (d.bn) row.appendChild(chip(safe(d.bn)));
+      if (d.tr) row.appendChild(chip(safe(d.tr)));
+      if (d.pattern) row.appendChild(chip(safe(d.pattern), 'ar'));
+      derivedWrap.appendChild(row);
+    });
+    card.appendChild(derivedWrap);
+  }
+
+  return card;
+}
+
+function chip(text, extra){
+  const c = el('span', `chip ${extra ? extra : ''}`, text);
+  return c;
+}
+
+function safe(s){
+  return (s == null) ? '' : String(s);
+}
