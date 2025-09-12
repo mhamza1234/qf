@@ -1,240 +1,157 @@
-/* ====== bootstrap ====== */
-const $ = (sel, root=document) => root.querySelector(sel);
-const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+/* ------------------------------
+   Config & helpers
+------------------------------ */
+const MANIFEST_URL = './manifest.json';
+const qs = (s, r = document) => r.querySelector(s);
+const qsa = (s, r = document) => [...r.querySelectorAll(s)];
 
-const deckSelect = $("#deckSelect");
-const alertBox   = $("#alert");
-const surahRoot  = $("#surahRoot");
+const withNoStore = (url) => {
+  // Honor existing query; add a cache-buster to be safe on GH Pages
+  const u = new URL(url, location.href);
+  u.searchParams.set('nocache', Date.now().toString());
+  return u.toString();
+};
 
-/* Load manifest and populate deck picker */
-async function init() {
-  try {
-    const res = await fetch("manifest.json?nocache=" + Date.now());
-    if (!res.ok) throw new Error("manifest.json not found");
-    const manifest = await res.json();
-
-    deckSelect.innerHTML = manifest.map(d => `<option value="${d.json}">${d.name}</option>`).join("");
-    deckSelect.addEventListener("change", () => loadDeck(deckSelect.value));
-    if (manifest.length) loadDeck(manifest[0].json);
-  } catch (e) {
-    showAlert("Could not load manifest. Check file path & CORS.");
-    console.error(e);
-  }
+function showFatalMessage(msg) {
+  const host = qs('#content') || document.body;
+  const box = document.createElement('div');
+  box.style.padding = '12px';
+  box.style.margin = '16px auto';
+  box.style.maxWidth = '820px';
+  box.style.border = '1px solid #f3c2c2';
+  box.style.background = '#fff4f4';
+  box.style.color = '#9b1c1c';
+  box.textContent = msg;
+  host.prepend(box);
 }
 
-function showAlert(msg) {
-  alertBox.textContent = msg;
-  alertBox.hidden = false;
-}
-function clearAlert(){ alertBox.hidden = true; }
-
-/* Load a deck JSON and render */
-async function loadDeck(jsonPath) {
-  clearAlert();
-  try {
-    const res = await fetch(`${jsonPath}?nocache=${Date.now()}`);
-    if (!res.ok) throw new Error(`Failed to load ${jsonPath}`);
-    const data = await res.json();
-
-    renderSurah(data);
-    // After render, fit the ayah blocks into the first screen
-    requestAnimationFrame(() => fitAllAyahBlocks());
-    window.addEventListener("resize", debounce(fitAllAyahBlocks, 120));
-  } catch (e) {
-    showAlert(e.message);
-    console.error(e);
-  }
+/* ------------------------------
+   Load manifest & data
+------------------------------ */
+async function loadManifest() {
+  const res = await fetch(withNoStore(MANIFEST_URL), { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} loading manifest`);
+  return res.json();
 }
 
-/* ===== Rendering ===== */
-function renderSurah(data){
-  surahRoot.innerHTML = "";
+async function loadData(pathFromManifest) {
+  const res = await fetch(withNoStore(pathFromManifest), { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} loading ${pathFromManifest}`);
+  return res.json();
+}
 
-  // Surah Meta
-  const meta = document.createElement("section");
-  meta.className = "surah-meta";
-  meta.innerHTML = `
-    <h2 class="surah-title-ar" lang="ar" dir="rtl">${data.name_ar || ""}</h2>
-    <p class="surah-title-bn">${data.name_bn || ""}</p>
+/* ------------------------------
+   Rendering
+------------------------------ */
+function renderMeta(metaEl, data) {
+  metaEl.innerHTML = `
+    <h2 lang="ar" dir="rtl">${data.name_ar ?? ''}</h2>
+    <h3 lang="bn" dir="ltr">${data.name_bn ?? ''}</h3>
   `;
-  surahRoot.appendChild(meta);
+}
 
-  // Verses
+function renderSurah(contentEl, data) {
+  contentEl.innerHTML = ''; // clear
+
+  const verseTpl = qs('#verseTpl');
+  const wordTpl  = qs('#wordCardTpl');
+
   (data.verses || []).forEach(v => {
-    const card = document.createElement("article");
-    card.className = "verse";
+    const node = verseTpl.content.cloneNode(true);
+    const ar = qs('.ayah-ar', node);
+    const bn = qs('.ayah-bn', node);
+    const list = qs('.words', node);
 
-    // HERO (ayah + meaning, centered)
-    const hero = document.createElement("div");
-    hero.className = "ayah-hero";
-    hero.innerHTML = `
-      <div class="ayah-block">
-        <p class="ayah-ar" lang="ar" dir="rtl">${escapeHTML(v.arabic || "")}</p>
-        <p class="ayah-bn" lang="bn" dir="ltr">${escapeHTML(v.bangla || "")}</p>
-      </div>
-    `;
-    card.appendChild(hero);
+    ar.textContent = v.arabic || '';
+    bn.textContent = v.bangla || '';
 
-    // WORD CAROUSEL
-    const wordArea = document.createElement("div");
-    wordArea.className = "word-area";
+    (v.words || []).forEach(w => {
+      const wNode = wordTpl.content.cloneNode(true);
 
-    const railWrap = document.createElement("div");
-    railWrap.className = "rail-wrap";
+      qs('.w-ar', wNode).textContent = w.ar || '';
+      qs('.w-bn', wNode).textContent = w.bn || '';
+      qs('.w-tr', wNode).textContent = w.tr ? w.tr : '';
 
-    const left = document.createElement("button");
-    left.className = "rail-btn rail-left";
-    left.setAttribute("aria-label", "Scroll left");
-    left.innerHTML = "&larr;";
+      const root = w.root ? `\u200E${w.root}\u200E` : ''; // keep neutral direction
+      const pattern = w.pattern || '';
 
-    const right = document.createElement("button");
-    right.className = "rail-btn rail-right";
-    right.setAttribute("aria-label", "Scroll right");
-    right.innerHTML = "&rarr;";
+      qs('.w-root', wNode).textContent = root;
+      qs('.w-pattern', wNode).textContent = pattern;
 
-    const rail = document.createElement("div");
-    rail.className = "rail";
-    (v.words || []).forEach(w => rail.appendChild(renderWordCard(w)));
+      // Derived list
+      const dWrap = qs('.derived', wNode);
+      dWrap.innerHTML = '';
+      if (Array.isArray(w.derived) && w.derived.length) {
+        w.derived.forEach(d => {
+          const row = document.createElement('span');
+          row.innerHTML = `
+            <span class="d-ar" lang="ar" dir="rtl">${d.ar ?? ''}</span>
+            <span class="d-right">
+              <span class="d-bn" lang="bn" dir="ltr">${d.bn ?? ''}</span>
+              <span class="pill">${d.tr ? d.tr : ''}</span>
+              <span class="pill">${d.pattern ?? ''}</span>
+            </span>
+          `;
+          dWrap.appendChild(row);
+        });
+      } else {
+        // if none, hide the divider space
+        dWrap.style.display = 'none';
+      }
 
-    railWrap.appendChild(left);
-    railWrap.appendChild(rail);
-    railWrap.appendChild(right);
-    wordArea.appendChild(railWrap);
-    card.appendChild(wordArea);
+      list.appendChild(wNode);
+    });
 
-    // wire arrows
-    const step = () => {
-      const colWidth = rail.firstElementChild
-        ? rail.firstElementChild.getBoundingClientRect().width + 14 /* gap */
-        : 300;
-      return Math.max(colWidth * 1.2, 280);
-    };
-    const scrollLeft = () => rail.scrollBy({left: -step(), behavior: "smooth"});
-    const scrollRight = () => rail.scrollBy({left: step(), behavior: "smooth"});
-
-    left.addEventListener("click", scrollLeft);
-    right.addEventListener("click", scrollRight);
-
-    // disable arrows at ends
-    const syncButtons = () => {
-      left.disabled  = rail.scrollLeft < 8;
-      const max = rail.scrollWidth - rail.clientWidth - 8;
-      right.disabled = rail.scrollLeft >= max;
-    };
-    rail.addEventListener("scroll", throttle(syncButtons, 80));
-    requestAnimationFrame(syncButtons);
-
-    surahRoot.appendChild(card);
+    contentEl.appendChild(node);
   });
 }
 
-function renderWordCard(w){
-  const card = document.createElement("div");
-  card.className = "word-card";
+/* ------------------------------
+   Init
+------------------------------ */
+async function init() {
+  const metaEl = qs('#meta');
+  const contentEl = qs('#content');
+  const selectEl = qs('#surahSelect');
+  const reloadBtn = qs('#reloadBtn');
 
-  // main block
-  const main = document.createElement("div");
-  main.className = "main-word";
-  main.innerHTML = `
-    <div class="ar" lang="ar" dir="rtl">${escapeHTML(w.ar || "")}</div>
-    <div class="bn">${escapeHTML(w.bn || "")}</div>
-  `;
+  try {
+    const manifest = await loadManifest();
 
-  // chips
-  const chips = document.createElement("div");
-  chips.className = "chips";
-  if (w.tr) chips.appendChild(chip(w.tr));
-  if (w.root) chips.appendChild(chip(w.root));
-  if (w.pattern) chips.appendChild(chip(w.pattern));
+    // Populate selector
+    selectEl.innerHTML = manifest.map(m => `
+      <option value="${m.id}">${m.name}</option>
+    `).join('');
 
-  card.appendChild(main);
-  card.appendChild(chips);
+    // Load first by default
+    const first = manifest[0];
+    if (!first) throw new Error('Manifest is empty.');
+    await loadAndRender(first);
 
-  // derived list
-  if (Array.isArray(w.derived) && w.derived.length){
-    const list = document.createElement("div");
-    list.className = "derived";
-    w.derived.forEach(d => {
-      const item = document.createElement("div");
-      item.className = "derived-item";
-      item.innerHTML = `
-        <div class="ar" lang="ar" dir="rtl">${escapeHTML(d.ar || "")}</div>
-        <div class="derived-meta">
-          ${d.bn ? `<span class="chip">${escapeHTML(d.bn)}</span>` : ""}
-          ${d.tr ? `<span class="chip">${escapeHTML(d.tr)}</span>` : ""}
-          ${d.pattern ? `<span class="chip">${escapeHTML(d.pattern)}</span>` : ""}
-        </div>
-      `;
-      list.appendChild(item);
+    // Change handler
+    selectEl.addEventListener('change', async (e) => {
+      const id = e.target.value;
+      const sel = manifest.find(x => x.id === id);
+      if (sel) await loadAndRender(sel);
     });
-    card.appendChild(list);
-  }
 
-  return card;
-}
+    // Reload (cache-bypass)
+    reloadBtn.addEventListener('click', async () => {
+      const id = selectEl.value;
+      const sel = manifest.find(x => x.id === id) || manifest[0];
+      await loadAndRender(sel, /*force*/ true);
+    });
 
-function chip(text){
-  const span = document.createElement("span");
-  span.className = "chip";
-  span.textContent = text;
-  return span;
-}
-
-/* ===== Ayah fit (keep hero on first screen) =====
-   Strategy:
-   - Start from CSS variables (--ayah-ar-size / --ayah-bn-size).
-   - If overflow in .ayah-hero, step both down a bit until it fits,
-     with safe minimums so it stays readable. */
-function fitAllAyahBlocks(){
-  $$(".verse .ayah-hero").forEach(fitAyahBlock);
-}
-function fitAyahBlock(hero){
-  const ar = hero.querySelector(".ayah-ar");
-  const bn = hero.querySelector(".ayah-bn");
-  if (!ar || !bn) return;
-
-  // Reset to base
-  setRootFontVars(1);
-
-  // If fits already, done
-  if (!overflows(hero)) return;
-
-  // Step down gradually (bounded)
-  let scale = 1.0;
-  const minScale = 0.74;
-  for (let i=0; i<16 && overflows(hero) && scale > minScale; i++){
-    scale -= 0.02;
-    setRootFontVars(scale);
-  }
-}
-function setRootFontVars(scale){
-  // Base sizes approximate the CSS clamp mid-point
-  const baseAr = 2.6; // rem
-  const baseBn = 1.4; // rem
-  document.documentElement.style.setProperty("--ayah-ar-size", `${baseAr*scale}rem`);
-  document.documentElement.style.setProperty("--ayah-bn-size", `${baseBn*scale}rem`);
-}
-function overflows(el){ return el.scrollHeight > el.clientHeight; }
-
-/* ===== Utils ===== */
-function escapeHTML(s){
-  return String(s)
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-}
-function debounce(fn, ms){
-  let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); };
-}
-function throttle(fn, ms){
-  let last=0, t;
-  return (...a)=>{
-    const now=Date.now();
-    if (now-last>=ms){ last=now; fn(...a); }
-    else{
-      clearTimeout(t);
-      t=setTimeout(()=>{ last=Date.now(); fn(...a); }, ms-(now-last));
+    async function loadAndRender(entry, force = false) {
+      const data = await loadData(entry.json + (force ? `?r=${Date.now()}` : ''));
+      renderMeta(metaEl, data);
+      renderSurah(contentEl, data);
     }
-  };
+
+  } catch (err) {
+    console.error(err);
+    showFatalMessage('Could not load manifest. Ensure <code>manifest.json</code> is at the site root and paths inside it are correct.');
+  }
 }
 
-init();
+document.addEventListener('DOMContentLoaded', init);
