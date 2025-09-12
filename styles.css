@@ -1,258 +1,181 @@
-/* ===== Base / Theme ===== */
+@import url('https://fonts.googleapis.com/css2?family=Amiri&family=Inter:wght@400;600&display=swap');
+
 :root{
-  /* Typography scales (JS may tune these) */
-  --ayah-ar-size: clamp(1.8rem, 4vw + 0.5rem, 3.2rem);
-  --ayah-bn-size: clamp(1.1rem, 1.4vw + 0.5rem, 1.6rem);
-
-  --font-sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-  --font-ar: "Amiri", "Scheherazade", "Noto Naskh Arabic", serif;
-
-  --bg-page: #f3f5f7;
-  --bg-card: #ffffff;
-  --bg-rail: #f7faf9;
-
-  --ink-main: #142022;
-  --ink-sub: #46555a;
-
-  --accent: #0f766e;       /* teal */
-  --accent-soft: #e0f2f1;  /* teal-50 */
-  --chip-bg: #eef6f5;
-  --chip-ink: #0b6b63;
-
-  --border: #e5eaee;
-  --shadow: 0 6px 18px rgba(22, 50, 50, 0.08);
+  --bg:#f7f8fa;
+  --card:#ffffff;
+  --ink:#1d2433;
+  --ink-2:#485063;
+  --muted:#8a93a5;
+  --border:#e7eaf0;
+  --accent:#0e7a6a;
+  --accent-2:#e3f4f1;
+  --shadow:0 8px 24px rgba(2,8,23,.06);
 }
 
-* { box-sizing: border-box; }
-html, body { height: 100%; }
+*{box-sizing:border-box}
+
+html,body{height:100%}
 body{
-  margin: 0;
-  font-family: var(--font-sans);
-  color: var(--ink-main);
-  background: var(--bg-page);
-  line-height: 1.6;
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:16px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
 
-/* ===== Header / Footer ===== */
+.container{max-width:1100px;margin:auto;padding:0 16px}
+
 .site-header{
-  position: sticky; top: 0; z-index: 20;
-  background: #fff;
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 2px 10px rgba(0,0,0,.03);
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
 }
-.site-header .wrap, .site-footer .wrap{
-  max-width: 1100px; margin: 0 auto; padding: 12px 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px;
+.header-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+.brand{font-size:18px;font-weight:600;margin:0;color:var(--ink)}
+
+.controls{display:flex;gap:8px;align-items:center}
+.select{
+  appearance:none;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--card);
+  color:var(--ink);
 }
-.brand{ font-size: 1.1rem; margin: 0; letter-spacing:.2px; }
-.deck-picker select{
-  appearance: none;
-  padding: 8px 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
-  font: inherit;
+.btn{
+  padding:8px 12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--accent);
+  color:#fff;
+  cursor:pointer;
+}
+.btn:hover{filter:brightness(.98)}
+
+.meta{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  margin:16px 0;
+  padding:18px;
+  box-shadow:var(--shadow);
+  text-align:center;
+}
+.meta h2{
+  font-family:Amiri,serif;
+  font-size:28px;
+  margin:4px 0 0;
+}
+.meta h3{
+  font-size:16px;
+  margin:6px 0 0;
+  color:var(--muted);
 }
 
-.site-footer{
-  border-top: 1px solid var(--border);
-  background: #fff;
-  margin-top: 40px;
-}
+.content{display:flex;flex-direction:column;gap:16px;margin-bottom:32px}
 
-/* ===== Alerts ===== */
-.alert{
-  max-width: 1100px; margin: 14px auto; padding: 10px 14px;
-  border: 1px solid #fde68a;
-  background: #fffbeb;
-  color: #92400e;
-  border-radius: 10px;
-}
-
-/* ===== Surah ===== */
-.surah-root{
-  max-width: 1100px;
-  margin: 18px auto 40px;
-  padding: 0 16px;
-  display: grid;
-  gap: 24px;
-}
-
-/* Surah header (name) */
-.surah-meta{
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 18px;
-  box-shadow: var(--shadow);
-}
-.surah-title-ar{
-  margin: 0;
-  font-family: var(--font-ar);
-  font-size: 1.8rem;
-  text-align: center;
-  direction: rtl;
-  color: var(--accent);
-}
-.surah-title-bn{
-  margin: 4px 0 0;
-  text-align: center;
-  color: var(--ink-sub);
-  font-weight: 600;
-}
-
-/* ===== Verse Card ===== */
+/* Verse card */
 .verse{
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  box-shadow: var(--shadow);
-  overflow: hidden;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px;
+  box-shadow:var(--shadow);
 }
 
-/* Ayah “hero” area — always first screen */
-.ayah-hero{
-  min-height: 58vh; /* gives room so it tends to fit on first page */
-  display: grid;
-  align-items: center;
-  justify-items: center;
-  padding: 28px 22px 20px;
-  background: linear-gradient(180deg, #ffffff 0%, #f7fbfa 100%);
-  border-bottom: 1px solid var(--border);
-}
-.ayah-block{
-  max-width: 960px;
-  width: 100%;
-  display: grid;
-  gap: 14px;
-  text-align: center;
-}
 .ayah-ar{
-  font-family: var(--font-ar);
-  font-size: var(--ayah-ar-size);
-  line-height: 1.7;
-  direction: rtl;
-  color: #0a3b37;
-  margin: 0;
+  font-family:Amiri,serif;
+  font-size: clamp(22px, 4vw, 34px);
+  line-height: 1.9;
+  text-align:center;
+  color:#0b3c32;
+  margin:0 0 4px;
 }
 .ayah-bn{
-  font-size: var(--ayah-bn-size);
-  line-height: 1.7;
-  color: #1f2a2e;
-  margin: 0;
+  font-size: clamp(14px, 2.2vw, 18px);
+  line-height:1.7;
+  text-align:center;
+  color:var(--ink-2);
+  margin:0 0 12px;
 }
 
-/* ===== Word Carousel (Netflix style) ===== */
-.word-area{
-  background: var(--bg-rail);
-  padding: 18px;
+/* Word list */
+.words{
+  display:grid;
+  grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
+  gap:12px;
 }
-.rail-wrap{
-  position: relative;
-}
-.rail{
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: clamp(260px, 28vw, 320px);
-  gap: 14px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding: 6px 6px 10px;
-  scrollbar-width: thin;
-}
-.rail::-webkit-scrollbar{ height: 10px; }
-.rail::-webkit-scrollbar-thumb{
-  background: #cfe3e0; border-radius: 8px;
-}
-.rail > *{ scroll-snap-align: start; }
 
-/* Rail arrows */
-.rail-btn{
-  position: absolute; top: 50%; transform: translateY(-50%);
-  width: 40px; height: 40px; border-radius: 999px;
-  border: 1px solid var(--border);
-  background: #fff;
-  box-shadow: var(--shadow);
-  display: grid; place-items: center;
-  cursor: pointer;
-  transition: transform .12s ease, opacity .12s ease;
-}
-.rail-btn:hover{ transform: translateY(-50%) scale(1.03); }
-.rail-btn:active{ transform: translateY(-50%) scale(0.98); }
-.rail-btn[disabled]{ opacity: .35; pointer-events: none; }
-
-.rail-left{ left: -6px; }
-.rail-right{ right: -6px; }
-
-/* ===== Word Card ===== */
+/* Word card */
 .word-card{
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 12px 12px 10px;
-  display: grid; gap: 8px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--card);
+  padding:10px 12px;
+  transition:box-shadow .2s ease, transform .1s ease;
+  outline:none;
 }
-.main-word{
-  display: grid; gap: 6px;
-}
-.main-word .ar{
-  font-family: var(--font-ar);
-  font-size: 1.65rem;
-  line-height: 1.5;
-  direction: rtl;
-  text-align: center;
-  color: #0b4742;
-}
-.main-word .bn{
-  font-size: 1rem;
-  text-align: center;
-  color: var(--ink-main);
-}
-.chips{
-  display: flex; flex-wrap: wrap; gap: 6px;
-  justify-content: center;
-}
-.chip{
-  font-size: .78rem;
-  border-radius: 999px;
-  padding: 4px 8px;
-  background: var(--chip-bg);
-  color: var(--chip-ink);
-  border: 1px solid #d7ece9;
+.word-card:focus,
+.word-card:hover{
+  box-shadow:0 8px 20px rgba(14,122,106,.12);
+  transform:translateY(-1px);
 }
 
-/* Derived list */
+.word-main{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:8px;
+}
+.w-ar{
+  font-family:Amiri,serif;
+  font-size:20px;             /* a bit bigger per your note */
+  color:#083d36;
+}
+.w-bn{
+  font-size:14px;
+  color:var(--ink-2);
+}
+
+.word-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 12px;
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+.word-meta .w-tr{font-weight:600;color:var(--ink-2)}
+.word-meta .w-root{padding:2px 6px;border-radius:6px;background:var(--accent-2);color:var(--accent)}
+.word-meta .w-pattern{padding:2px 6px;border-radius:6px;background:#f0f3f7;color:#415066}
+
 .derived{
-  margin-top: 6px;
-  border-top: 1px dashed var(--border);
-  padding-top: 8px;
-  display: grid; gap: 8px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  border-top:1px dashed var(--border);
+  padding-top:8px;
 }
-.derived-item{
-  display: grid; gap: 4px;
-  padding: 8px;
-  background: #fafefe;
-  border: 1px solid #e7f3f1;
-  border-radius: 10px;
+.derived span{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:8px;
+  font-size:13px;
 }
-.derived-item .ar{
-  font-family: var(--font-ar);
-  /* Slightly larger Arabic for related forms (your request) */
-  font-size: 1.25rem;
-  line-height: 1.5;
-  direction: rtl;
-  text-align: center;
-  color: #0b4742;
-}
-.derived-meta{
-  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
-}
-.derived-meta .chip{ padding: 3px 7px; font-size: .74rem; }
+.derived .d-ar{font-family:Amiri,serif;font-size:18px;color:#0b3c32}
+.derived .d-right{display:flex;gap:8px;color:var(--muted)}
+.derived .d-right .d-bn{color:var(--ink-2)}
+.derived .pill{padding:2px 6px;border-radius:6px;background:#f0f3f7}
 
-/* Utilities */
+/* Utility */
 .sr-only{
-  position: absolute !important;
-  width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  position:absolute !important;
+  width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0
+}
+
+/* Small screens */
+@media (max-width:560px){
+  .words{grid-template-columns:1fr}
 }
