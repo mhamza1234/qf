@@ -1,0 +1,14 @@
+[
+  {
+    "id": "mulk-full",
+    "name": "Al-Mulk (67) — Full",
+    "json": "data/mulk_full.json",
+    "mode": "full"
+  },
+  {
+    "id": "demo-mini",
+    "name": "Demo — Mini Sample",
+    "json": "data/demo_mini.json",
+    "mode": "full"
+  }
+]
