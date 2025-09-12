@@ -1,144 +1,179 @@
-/* ========= Qur’an Word Explorer =========
-   - Loads data/manifest.json (list of decks)
-   - Renders selected deck: Arabic ayah + Bangla below
-   - Each ayah has a horizontally scrollable row of compact word-cards
-   - Card top row: [Arabic word]  [Bangla meaning chip]
-   - Below: compact chips (translit • root • pattern)
-   - Derived section: one row per related item:
-       (Arabic)  (Bangla)  [translit chip] [pattern chip]
-   - No visible labels; a11y labels are screen-reader only.
-*/
+/* app.js — robust auto-loader + tolerant renderer */
+
+const MANIFEST_URL = 'data/manifest.json';
 
 const els = {
-  app: document.getElementById('app'),
-  deck: document.getElementById('deck'),
-  reloadBtn: document.getElementById('reloadBtn'),
+  select: document.getElementById('deckSelect'),
+  reload: document.getElementById('reloadBtn'),
+  verseWrap: document.getElementById('verses'),
+  banner: document.getElementById('banner'),
+  tip: document.getElementById('tip'),
 };
 
-let manifest = [];
-let currentDeck = null;
+let manifest = null;
 
-// ---------- init ----------
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadManifest();
-  await loadInitialDeck();
-  els.deck.addEventListener('change', handleChangeDeck);
-  els.reloadBtn.addEventListener('click', () => currentDeck && renderDeck(currentDeck));
+document.addEventListener('DOMContentLoaded', () => {
+  init().catch(showFatal);
 });
 
-async function loadManifest(){
-  const res = await fetch('data/manifest.json', {cache:'no-store'});
-  if(!res.ok) throw new Error('manifest.json not found');
-  manifest = await res.json();
+async function init() {
+  showTip('Tip: স্ক্রল করে কার্ড দেখুন • কার্ড ট্যাপ/এন্টার করলে বিস্তারিত টগল হবে');
 
-  // fill dropdown
-  els.deck.innerHTML = '';
-  manifest.forEach((m,i) => {
-    const op = document.createElement('option');
-    op.value = m.id;
-    op.textContent = m.name;
-    els.deck.appendChild(op);
+  manifest = await loadManifest(MANIFEST_URL);
+
+  // Populate dropdown
+  els.select.innerHTML = '';
+  manifest.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = item.name;
+    els.select.appendChild(opt);
+  });
+
+  // Wire events
+  els.reload.addEventListener('click', () => safeLoadDeck(els.select.value));
+  els.select.addEventListener('change', () => safeLoadDeck(els.select.value));
+
+  // ✅ Auto-load the initially selected deck
+  if (els.select.value) {
+    await safeLoadDeck(els.select.value);
+  }
+}
+
+async function safeLoadDeck(id) {
+  try {
+    clearBanner();
+    const deck = manifest.find(d => d.id === id);
+    if (!deck) throw new Error(`Deck not found: ${id}`);
+
+    const res = await fetch(deck.json, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Failed to fetch ${deck.json} (${res.status})`);
+    const data = await res.json();
+
+    renderSurah(data, deck.mode || 'full');
+  } catch (err) {
+    showFatal(err);
+  }
+}
+
+async function loadManifest(url) {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Failed to fetch manifest (${res.status})`);
+  // Validate basic shape
+  const m = await res.json();
+  if (!Array.isArray(m)) throw new Error('Manifest must be an array.');
+  m.forEach((row, i) => {
+    if (!row.id || !row.name || !row.json) {
+      throw new Error(`Manifest row ${i} missing required fields (id/name/json).`);
+    }
+  });
+  return m;
+}
+
+/* ----------------- Rendering ----------------- */
+
+function renderSurah(surah, mode) {
+  // Clear old
+  els.verseWrap.innerHTML = '';
+
+  (surah.verses || []).forEach(verse => {
+    const article = document.createElement('article');
+    article.className = 'verse';
+    article.setAttribute('data-ayah-id', verse.ayah_id || '');
+
+    // top: Arabic line
+    const topBar = document.createElement('div');
+    topBar.className = 'ayah-head';
+    topBar.innerHTML = `
+      <div class="ayah-ar" lang="ar" dir="rtl">${escapeHTML(verse.arabic || '')}</div>
+      <div class="ayah-bn" lang="bn" dir="ltr">${escapeHTML(verse.bangla || '')}</div>
+    `;
+    article.appendChild(topBar);
+
+    // rail: word cards
+    const rail = document.createElement('div');
+    rail.className = 'word-rail';
+    rail.setAttribute('role', 'region');
+    rail.setAttribute('aria-label', `আয়াত ${verse.ayah_id || ''} শব্দ তালিকা`);
+
+    (verse.words || []).forEach(w => {
+      rail.appendChild(buildWordCard(w));
+    });
+
+    article.appendChild(rail);
+    els.verseWrap.appendChild(article);
   });
 }
 
-async function loadInitialDeck(){
-  const first = manifest[0];
-  if(!first) return;
-  await loadDeckById(first.id);
-}
+/* Build one word card (resilient to missing fields) */
+function buildWordCard(w) {
+  const card = document.createElement('div');
+  card.className = 'word-card';
+  card.tabIndex = 0;
 
-async function handleChangeDeck(){
-  await loadDeckById(els.deck.value);
-}
+  const ar = safe(w.ar);
+  const bn = safe(w.bn);
+  const tr = safe(w.tr);
+  const root = safe(w.root);
+  const pattern = safe(w.pattern);
 
-async function loadDeckById(id){
-  const meta = manifest.find(m => m.id === id);
-  if(!meta) return;
-
-  const res = await fetch(meta.json, {cache:'no-store'});
-  if(!res.ok) throw new Error(`JSON not found: ${meta.json}`);
-  const data = await res.json();
-  currentDeck = {meta, data};
-  renderDeck(currentDeck);
-}
-
-// ---------- render ----------
-function renderDeck({meta, data}){
-  const parts = [];
-
-  data.verses.forEach(v => {
-    parts.push(renderVerse(v));
-  });
-
-  els.app.innerHTML = parts.join('');
-  // set select to current
-  els.deck.value = meta.id;
-}
-
-function renderVerse(v){
-  // header: Arabic ayah + Bangla ayah
-  const ar = escapeHtml(v.arabic);
-  const bn = escapeHtml(v.bangla);
-
-  // word cards row
-  const cards = (v.words || []).map(renderWordCard).join('');
-
-  return `
-    <article class="verse" data-ayah-id="${escapeAttr(v.ayah_id || '')}">
-      <p class="ayah-ar" lang="ar" dir="rtl">${ar}</p>
-      <p class="ayah-bn" lang="bn" dir="ltr">${bn}</p>
-
-      <div class="word-strip" role="list" aria-label="শব্দসমূহ">
-        ${cards}
+  card.innerHTML = `
+    <div class="word-main">
+      <div class="w-ar" lang="ar" dir="rtl">${escapeHTML(ar)}</div>
+      <div class="w-bn" lang="bn">${escapeHTML(bn)}</div>
+      <div class="w-meta">
+        ${tr ? `<span class="chip">${escapeHTML(tr)}</span>` : ''}
+        ${root ? `<span class="chip">${escapeHTML(root)}</span>` : ''}
+        ${pattern ? `<span class="chip">${escapeHTML(pattern)}</span>` : ''}
       </div>
-    </article>
-  `;
-}
-
-function renderWordCard(w){
-  // Top row: Arabic word on left (rtl) + Bangla chip on right
-  const ar = spanAr(w.ar);
-  const bn = `<span class="meaning" lang="bn">${escapeHtml(w.bn || '')}</span>`;
-
-  // Middle line as compact chips (no visible labels)
-  const chipTr = w.tr ? chip(w.tr) : '';
-  const chipRoot = w.root ? chip(w.root) : '';
-  const chipPattern = w.pattern ? chip(w.pattern) : '';
-
-  // Derived block (each row compact)
-  const derived = Array.isArray(w.derived) && w.derived.length
-    ? `
-      <div class="derived" role="list">
+    </div>
+    ${Array.isArray(w.derived) && w.derived.length ? `
+      <div class="derived">
         ${w.derived.map(d => `
-          <div class="der-item" role="listitem">
-            <div class="der-row-top">
-              <span class="der-ar" lang="ar" dir="rtl">${escapeHtml(d.ar || '')}</span>
-              <span class="der-mean" lang="bn">${escapeHtml(d.bn || '')}</span>
-            </div>
-            <div class="der-chips">
-              ${d.tr ? chip(d.tr) : ''}${d.pattern ? chip(d.pattern) : ''}
-            </div>
-          </div>`).join('')}
-      </div>`
-    : '';
-
-  // a11y: allow keyboard users to focus the card and read contents
-  return `
-    <section class="word-card" tabindex="0" role="group" aria-label="${escapeAttr((w.ar||'') + ' — ' + (w.bn||''))}">
-      <div class="card-head">
-        <div class="arabic" lang="ar" dir="rtl">${ar}</div>
-        ${bn}
-      </div>
-      <div class="meta">
-        ${chipTr}${chipRoot}${chipPattern}
-      </div>
-      ${derived}
-    </section>
+          <div class="drow">
+            <span class="d-ar" lang="ar" dir="rtl">${escapeHTML(safe(d.ar))}</span>
+            <span class="d-bn" lang="bn">${escapeHTML(safe(d.bn))}</span>
+            <span class="d-tr">${escapeHTML(safe(d.tr))}</span>
+            <span class="d-pt">${escapeHTML(safe(d.pattern))}</span>
+          </div>
+        `).join('')}
+      </div>` : ''
+    }
   `;
+
+  // Toggle derived on click/Enter
+  card.addEventListener('click', () => toggleDerived(card));
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDerived(card); }
+  });
+
+  return card;
 }
 
-// ---------- helpers ----------
-function chip(text){ return `<span class="chip">${escapeHtml(text)}</span>`; }
-function spanAr(s){ return `<span lang="ar" dir="rtl">${escapeHtml(s || '')}</span>`; }
-function escapeHtml(s){ return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function escapeAttr(s){ return escapeHtml(s).replace(/"/g,'&quot;'); }
+function toggleDerived(card) {
+  card.classList.toggle('expanded');
+}
+
+/* ----------------- Utilities ----------------- */
+
+function safe(v) { return (v === undefined || v === null) ? '' : String(v); }
+
+function escapeHTML(s) {
+  return s.replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function showFatal(err) {
+  console.error(err);
+  els.banner.hidden = false;
+  els.banner.textContent = (err && err.message) ? err.message : 'Unknown error';
+}
+
+function clearBanner() {
+  els.banner.hidden = true;
+  els.banner.textContent = '';
+}
+
+function showTip(msg) {
+  if (els.tip) els.tip.textContent = msg;
+}
