@@ -1,137 +1,183 @@
-/* Qur’an Word Explorer – data-driven UI */
+// ------------------------------
+// Config
+// ------------------------------
+const MANIFEST_URL = 'manifest.json'; // manifest at site root
 
-// ===== Utilities =====
-const $ = sel => document.querySelector(sel);
-const statusEl = $('#status');
-const mount = $('#surahMount');
-const selectEl = $('#surahSelect');
-
-function setStatus(msg) {
-  statusEl.textContent = msg || '';
-}
-
-function showError(msg) {
-  statusEl.textContent = msg;
-  statusEl.style.color = '#b42318';
-}
-
-function ayahNumFromId(ayah_id) {
-  const parts = String(ayah_id).split(':');
-  return parts.length > 1 ? parts[1] : ayah_id;
-}
-
-function surahNumFromFirstAyah(verses=[]) {
-  if (!verses.length) return '';
-  const id = String(verses[0].ayah_id || '');
-  const p = id.split(':');
-  return p.length > 1 ? p[0] : '';
-}
-
-// ===== Manifest load =====
-async function loadManifest() {
-  setStatus('Loading manifest…');
-  const res = await fetch('./manifest.json', { cache: 'no-store' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const manifest = await res.json();
-  if (!Array.isArray(manifest) || manifest.length === 0) {
-    throw new Error('Manifest is empty or not an array.');
-  }
-  return manifest;
-}
-
-function populateSurahSelect(manifest) {
-  selectEl.innerHTML = '';
-  manifest.forEach(item => {
-    const opt = document.createElement('option');
-    opt.value = item.json; // URL to the JSON file
-    opt.textContent = item.name || item.id;
-    opt.dataset.mode = item.mode || 'full';
-    selectEl.appendChild(opt);
-  });
-}
-
-async function loadSelectedSurah() {
-  const url = selectEl.value;
-  if (!url) return;
-  setStatus('Loading surah…');
+// ------------------------------
+// Boot
+// ------------------------------
+(async function boot() {
+  const status = setStatus();
   try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    renderSurah(data);
-    setStatus('');
+    const manifest = await loadManifest();
+
+    validateManifest(manifest);
+
+    // Populate deck dropdown
+    const select = document.getElementById('deckSelect');
+    select.innerHTML = manifest.map(d => `<option value="${d.json}">${d.name}</option>`).join('');
+
+    select.addEventListener('change', async e => {
+      await loadAndRenderDeck(e.target.value, status);
+    });
+
+    // Load first deck by default
+    await loadAndRenderDeck(manifest[0].json, status);
+  } catch (err) {
+    console.error(err);
+    status.textContent = `Error: ${err.message}`;
+    status.classList.add('error');
+  }
+})();
+
+// ------------------------------
+// Data Loaders
+// ------------------------------
+async function loadManifest() {
+  const url = `${MANIFEST_URL}?v=${Date.now()}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Could not load manifest (${res.status})`);
+  return res.json();
+}
+
+async function loadDeck(path) {
+  const url = `${path}?v=${Date.now()}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Could not load deck JSON (${res.status}): ${path}`);
+  return res.json();
+}
+
+// ------------------------------
+// Renderers
+// ------------------------------
+async function loadAndRenderDeck(deckPath, statusEl) {
+  try {
+    statusEl.textContent = 'Loading…';
+    const deck = await loadDeck(deckPath);
+    statusEl.textContent = '';
+
+    renderSurahHeader(deck);
+    renderVerses(deck);
   } catch (e) {
-    showError(`Could not load surah: ${e.message}`);
-    mount.innerHTML = '';
+    console.error(e);
+    statusEl.textContent = `Error: ${e.message}`;
+    statusEl.classList.add('error');
   }
 }
 
-// ===== Rendering =====
-function renderSurah(data) {
-  // data shape:
-  // { name_ar, name_bn, verses: [ { ayah_id, arabic, bangla, words:[{ar,bn,tr,root,pattern,derived:[]}, ...] } ] }
-  if (!data || !Array.isArray(data.verses)) {
-    mount.innerHTML = '';
-    showError('Invalid surah JSON.');
-    return;
-  }
+function renderSurahHeader(deck) {
+  const el = document.getElementById('surahHeader');
+  const nameAr = deck.name_ar || '';
+  const nameBn = deck.name_bn || '';
 
-  const surahNum = surahNumFromFirstAyah(data.verses) || (data.surah || '');
-
-  const html = data.verses.map(ayah => {
-    const ayahNo = ayahNumFromId(ayah.ayah_id);
-    const cards = (ayah.words || []).map(renderWordCard).join('');
-    return `
-      <section class="ayah-block" data-ayah="${ayah.ayah_id}">
-        <header class="ayah-header">
-          <div class="ayah-number">(${surahNum}:${ayahNo})</div>
-          <p class="ayah-ar" lang="ar" dir="rtl">${ayah.arabic || ''}</p>
-          <p class="ayah-bn" lang="bn" dir="ltr">${ayah.bangla || ''}</p>
-        </header>
-        <div class="word-carousel">
-          ${cards}
-        </div>
-      </section>
-    `;
-  }).join('');
-
-  mount.innerHTML = html;
+  el.innerHTML = `
+    <h2 class="surah-title-ar" lang="ar" dir="rtl">${escapeHtml(nameAr)}</h2>
+    <p class="surah-title-bn" lang="bn" dir="ltr">${escapeHtml(nameBn)}</p>
+  `;
 }
 
-function renderWordCard(word) {
-  const derivedRows = (word.derived || []).map(d => `
-    <div class="derived-row">
-      <span class="drv-ar" lang="ar" dir="rtl">${d.ar}</span>
-      <span class="drv-tr">${d.tr || ''}</span>
-      <span class="drv-bn" lang="bn">${d.bn || ''}</span>
-      <span class="chip chip-pattern">${d.pattern || ''}</span>
-    </div>
-  `).join('');
+function renderVerses(deck) {
+  const mount = document.getElementById('verses');
+  const verses = Array.isArray(deck.verses) ? deck.verses : [];
+
+  mount.innerHTML = verses.map(v => renderVerseBlock(v)).join('');
+}
+
+function renderVerseBlock(v) {
+  const ayahNum = extractAyahNumber(v.ayah_id);
+  const arabic = v.arabic || '';
+  const bangla = v.bangla || '';
+  const words = Array.isArray(v.words) ? v.words : [];
+
+  const cards = words.map(w => renderWordCard(w)).join('');
 
   return `
-    <article class="word-card">
-      <div class="main-word">
-        <div class="main-ar" lang="ar" dir="rtl">${word.ar || ''}</div>
-        <div class="main-bn" lang="bn">${word.bn || ''}</div>
-        <div class="meta">
-          ${word.tr ? `<span class="meta-tr">${word.tr}</span>` : ''}
-          ${word.root ? `<span class="chip chip-root">${word.root}</span>` : ''}
-          ${word.pattern ? `<span class="chip chip-pattern">${word.pattern}</span>` : ''}
+    <article class="verse" data-ayah="${ayahNum}">
+      <div class="verse-head">
+        <div class="ayah-meta">
+          <span class="badge">Ayah ${ayahNum}</span>
+        </div>
+        <p class="ayah-ar" lang="ar" dir="rtl">${escapeHtml(arabic)}</p>
+        <p class="ayah-bn" lang="bn" dir="ltr">${escapeHtml(bangla)}</p>
+      </div>
+      <div class="word-row">
+        <div class="scroller">
+          ${cards}
         </div>
       </div>
-      ${derivedRows ? `<div class="divider"></div><div class="derived">${derivedRows}</div>` : ''}
     </article>
   `;
 }
 
-// ===== Boot =====
-(async function boot(){
-  try {
-    const manifest = await loadManifest();
-    populateSurahSelect(manifest);
-    selectEl.addEventListener('change', loadSelectedSurah);
-    await loadSelectedSurah();
-  } catch (e) {
-    showError(`Could not load manifest. Check file path & hosting. (${e.message})`);
-  }
-})();
+function renderWordCard(w) {
+  // Main word
+  const ar = w.ar || '';
+  const bn = w.bn || '';
+  const tr = w.tr || '';
+  const root = w.root || '';
+  const pattern = w.pattern || '';
+
+  // Derived words (array of {ar, bn, tr?, pattern?})
+  const derived = Array.isArray(w.derived) ? w.derived : [];
+
+  const derivedHtml = derived.map(d => `
+    <div class="der-item">
+      <div class="der-top">
+        <p class="der-ar" lang="ar" dir="rtl">${escapeHtml(d.ar || '')}</p>
+        <p class="der-bn" lang="bn" dir="ltr">${escapeHtml(d.bn || '')}</p>
+      </div>
+      <div class="der-meta">
+        ${d.tr ? `<span class="der-pill">${escapeHtml(d.tr)}</span>` : ''}
+        ${d.pattern ? `<span class="der-pill">${escapeHtml(d.pattern)}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="card">
+      <div class="card-main">
+        <p class="word-ar" lang="ar" dir="rtl">${escapeHtml(ar)}</p>
+        <p class="word-bn" lang="bn" dir="ltr">${escapeHtml(bn)}</p>
+        <div class="word-metadata">
+          ${tr ? `<span class="meta-pill">${escapeHtml(tr)}</span>` : ''}
+          ${root ? `<span class="meta-pill">${escapeHtml(root)}</span>` : ''}
+          ${pattern ? `<span class="meta-pill">${escapeHtml(pattern)}</span>` : ''}
+        </div>
+      </div>
+      ${derived.length ? `<div class="derived">${derivedHtml}</div>` : ''}
+    </div>
+  `;
+}
+
+// ------------------------------
+// Helpers
+// ------------------------------
+function extractAyahNumber(ayahId) {
+  // expects formats like "67:1", "67:10"
+  if (!ayahId) return '';
+  const parts = String(ayahId).split(':');
+  return parts.length > 1 ? parts[1] : '';
+}
+
+function validateManifest(mf) {
+  if (!Array.isArray(mf)) throw new Error('Manifest must be an array.');
+  mf.forEach((d, i) => {
+    if (!d || typeof d !== 'object') throw new Error(`Manifest item ${i} invalid.`);
+    if (!d.json) throw new Error(`Manifest item ${i} missing "json" path.`);
+    if (!d.name) throw new Error(`Manifest item ${i} missing "name".`);
+  });
+}
+
+function setStatus(){
+  const el = document.getElementById('status');
+  el.classList.remove('error');
+  el.textContent = '';
+  return el;
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
