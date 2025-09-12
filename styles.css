@@ -1,277 +1,258 @@
-/* ===========================
-   Qur’an Word Explorer – styles.css
-   =========================== */
+/* ===== Base / Theme ===== */
+:root{
+  /* Typography scales (JS may tune these) */
+  --ayah-ar-size: clamp(1.8rem, 4vw + 0.5rem, 3.2rem);
+  --ayah-bn-size: clamp(1.1rem, 1.4vw + 0.5rem, 1.6rem);
 
-/* ---- Design tokens (dark theme) ---- */
-:root {
-  --bg: #0e2a28;
-  --bg-elev-1: #102f2c;
-  --bg-elev-2: #0e2b28;
-  --ink: #e7f2ef;
-  --ink-dim: #bcd3cf;
-  --muted: #8eb3ad;
+  --font-sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  --font-ar: "Amiri", "Scheherazade", "Noto Naskh Arabic", serif;
 
-  --brand: #5fe1c8;       /* accents */
-  --chip-bg: #123d39;
-  --chip-border: #1f4d49;
+  --bg-page: #f3f5f7;
+  --bg-card: #ffffff;
+  --bg-rail: #f7faf9;
 
-  --card-border: #1f4d49;
-  --divider: #275f5a;
+  --ink-main: #142022;
+  --ink-sub: #46555a;
 
-  --shadow: 0 6px 18px rgba(0, 0, 0, .25);
-  --radius-card: 16px;
-  --radius-chip: 999px;
+  --accent: #0f766e;       /* teal */
+  --accent-soft: #e0f2f1;  /* teal-50 */
+  --chip-bg: #eef6f5;
+  --chip-ink: #0b6b63;
 
-  --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-  --font-ar: "Amiri", "Scheherazade", "Lateef", serif;
+  --border: #e5eaee;
+  --shadow: 0 6px 18px rgba(22, 50, 50, 0.08);
 }
 
-/* Base */
 * { box-sizing: border-box; }
-html, body {
-  height: 100%;
+html, body { height: 100%; }
+body{
   margin: 0;
-  padding: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-ui);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-sans);
+  color: var(--ink-main);
+  background: var(--bg-page);
+  line-height: 1.6;
 }
-a { color: var(--brand); text-decoration: none; }
-button, select { font-family: inherit; }
 
-/* App bar */
-.appbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: linear-gradient(180deg, #0f302d 0%, #0d2725 100%);
-  border-bottom: 1px solid var(--card-border);
+/* ===== Header / Footer ===== */
+.site-header{
+  position: sticky; top: 0; z-index: 20;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 10px rgba(0,0,0,.03);
 }
-.appbar h1 {
-  margin: 0;
-  font-size: 1.6rem;
-  letter-spacing: .3px;
+.site-header .wrap, .site-footer .wrap{
+  max-width: 1100px; margin: 0 auto; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
 }
-.controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.controls label { opacity: .85; }
-.controls select,
-.controls button {
-  height: 36px;
+.brand{ font-size: 1.1rem; margin: 0; letter-spacing:.2px; }
+.deck-picker select{
+  appearance: none;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  border: 1px solid var(--card-border);
-  background: var(--bg-elev-1);
-  color: var(--ink);
-  padding: 0 10px;
-}
-.controls button {
-  cursor: pointer;
-  border-color: transparent;
-  background: #16544f;
-}
-.controls button:hover { filter: brightness(1.05); }
-
-/* Page container */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 14px 20px 48px;
+  background: #fff;
+  font: inherit;
 }
 
-/* Info */
-.tip {
-  margin: 6px 0 12px;
-  color: var(--muted);
-  font-size: .95rem;
+.site-footer{
+  border-top: 1px solid var(--border);
+  background: #fff;
+  margin-top: 40px;
 }
-.banner {
-  display: block;
-  margin: 8px 0 10px;
-  padding: 10px 12px;
-  border: 1px solid #7b2b2b;
-  background: #3a1515;
-  color: #ffd9d9;
+
+/* ===== Alerts ===== */
+.alert{
+  max-width: 1100px; margin: 14px auto; padding: 10px 14px;
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  color: #92400e;
   border-radius: 10px;
 }
 
-/* Verse block */
-.verse {
-  background: var(--bg-elev-1);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow);
-  padding: 18px 16px;
-  margin: 16px 0 22px;
-}
-
-/* Verse header: Arabic line + Bangla line */
-.ayah-head {
+/* ===== Surah ===== */
+.surah-root{
+  max-width: 1100px;
+  margin: 18px auto 40px;
+  padding: 0 16px;
   display: grid;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 24px;
 }
-.ayah-ar {
+
+/* Surah header (name) */
+.surah-meta{
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+}
+.surah-title-ar{
+  margin: 0;
   font-family: var(--font-ar);
-  font-size: 2rem;
-  line-height: 2.8rem;
-  text-align: right;
-  color: var(--ink);
-  padding-inline: 8px;
+  font-size: 1.8rem;
+  text-align: center;
+  direction: rtl;
+  color: var(--accent);
 }
-.ayah-bn {
-  font-size: 1.05rem;
-  color: var(--ink-dim);
-  padding-inline: 8px;
-}
-
-/* Horizontal rail of word cards */
-.word-rail {
-  display: flex;
-  gap: 16px;
-  overflow-x: auto;
-  padding: 6px 4px 6px 8px;
-  scroll-snap-type: x mandatory;
-  scroll-padding: 8px;
-}
-.word-rail:focus-within { outline: none; }
-
-/* Scrollbar (WebKit/Chromium) */
-.word-rail::-webkit-scrollbar { height: 10px; }
-.word-rail::-webkit-scrollbar-track { background: #0b2220; border-radius: 10px; }
-.word-rail::-webkit-scrollbar-thumb { background: #214a45; border-radius: 10px; }
-.word-rail::-webkit-scrollbar-thumb:hover { background: #2b5953; }
-
-/* Word card */
-.word-card {
-  scroll-snap-align: start;
-  flex: 0 0 auto;
-  min-width: 260px;
-  max-width: 280px;
-  background: var(--bg-elev-2);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
-  padding: 14px;
-  box-shadow: 0 3px 10px rgba(0,0,0,.18);
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-  cursor: pointer;
-}
-.word-card:focus { outline: 2px solid #2f8a80; outline-offset: 2px; }
-.word-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.25); border-color: #2a6e68; }
-
-/* Card header (main word) */
-.word-main .w-ar {
-  font-family: var(--font-ar);
-  font-size: 1.6rem;
-  line-height: 2.1rem;
-  text-align: right;
-}
-.word-main .w-bn {
-  margin-top: 6px;
+.surah-title-bn{
+  margin: 4px 0 0;
+  text-align: center;
+  color: var(--ink-sub);
   font-weight: 600;
 }
-.w-meta {
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+
+/* ===== Verse Card ===== */
+.verse{
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
-/* Chips for tr/root/pattern */
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: var(--radius-chip);
-  background: var(--chip-bg);
-  border: 1px solid var(--chip-border);
-  color: var(--ink);
-  font-size: .84rem;
-  white-space: nowrap;
-  opacity: .95;
-}
-
-/* Derived section (collapsible) */
-.derived {
-  display: none;
-  margin-top: 12px;
-  border-top: 1px dashed var(--divider);
-  padding-top: 10px;
-}
-.word-card.expanded .derived { display: block; }
-
-.drow {
+/* Ayah “hero” area — always first screen */
+.ayah-hero{
+  min-height: 58vh; /* gives room so it tends to fit on first page */
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
-  gap: 10px;
-  align-items: baseline;
-  padding: 8px 0;
-  border-bottom: 1px dotted rgba(255,255,255,.06);
+  align-items: center;
+  justify-items: center;
+  padding: 28px 22px 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbfa 100%);
+  border-bottom: 1px solid var(--border);
 }
-.drow:last-child { border-bottom: none; }
-.d-ar  { font-family: var(--font-ar); text-align: right; }
-.d-bn  { color: var(--ink); }
-.d-tr  { color: var(--muted); font-size: .92rem; }
-.d-pt  { color: var(--muted); font-size: .92rem; }
-
-/* Utility alignment for bidi text inside small rows */
-[dir="rtl"] .drow { direction: ltr; } /* keep grid left-to-right while Arabic spans set dir individually */
-
-/* Empty state (if any) */
-.empty {
-  opacity: .7;
-  padding: 20px;
+.ayah-block{
+  max-width: 960px;
+  width: 100%;
+  display: grid;
+  gap: 14px;
   text-align: center;
 }
-
-/* ---------- Responsive ---------- */
-@media (max-width: 1100px) {
-  .container { max-width: 960px; }
-  .ayah-ar { font-size: 1.9rem; line-height: 2.6rem; }
+.ayah-ar{
+  font-family: var(--font-ar);
+  font-size: var(--ayah-ar-size);
+  line-height: 1.7;
+  direction: rtl;
+  color: #0a3b37;
+  margin: 0;
 }
-@media (max-width: 900px) {
-  .container { max-width: 760px; }
-  .word-card { min-width: 240px; max-width: 260px; }
-}
-@media (max-width: 640px) {
-  .appbar { padding: 12px 14px; }
-  .appbar h1 { font-size: 1.3rem; }
-  .controls { gap: 8px; }
-  .controls select, .controls button { height: 34px; }
-  .ayah-ar { font-size: 1.7rem; line-height: 2.4rem; }
-  .ayah-bn { font-size: 1rem; }
-  .word-card { min-width: 220px; max-width: 240px; }
-  .drow { grid-template-columns: auto 1fr; }
-  .d-tr, .d-pt { justify-self: start; }
+.ayah-bn{
+  font-size: var(--ayah-bn-size);
+  line-height: 1.7;
+  color: #1f2a2e;
+  margin: 0;
 }
 
-/* Optional: Respect system light mode if needed */
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f7fbfa;
-    --bg-elev-1: #ffffff;
-    --bg-elev-2: #fcfffe;
-    --ink: #112523;
-    --ink-dim: #294c48;
-    --muted: #537a74;
-    --card-border: #d7e7e4;
-    --chip-bg: #eef7f5;
-    --chip-border: #d9ece9;
-    --divider: #cfe3e0;
-  }
-  .appbar { background: linear-gradient(180deg, #e9f5f3 0%, #e4f1ef 100%); border-bottom-color: #d7e7e4; }
-  .controls button { background: #e1f3f0; color: #0d2d2a; }
-  .word-rail::-webkit-scrollbar-track { background: #eef6f5; }
-  .word-rail::-webkit-scrollbar-thumb { background: #c5dfdb; }
+/* ===== Word Carousel (Netflix style) ===== */
+.word-area{
+  background: var(--bg-rail);
+  padding: 18px;
+}
+.rail-wrap{
+  position: relative;
+}
+.rail{
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(260px, 28vw, 320px);
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 6px 6px 10px;
+  scrollbar-width: thin;
+}
+.rail::-webkit-scrollbar{ height: 10px; }
+.rail::-webkit-scrollbar-thumb{
+  background: #cfe3e0; border-radius: 8px;
+}
+.rail > *{ scroll-snap-align: start; }
+
+/* Rail arrows */
+.rail-btn{
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px; border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  box-shadow: var(--shadow);
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: transform .12s ease, opacity .12s ease;
+}
+.rail-btn:hover{ transform: translateY(-50%) scale(1.03); }
+.rail-btn:active{ transform: translateY(-50%) scale(0.98); }
+.rail-btn[disabled]{ opacity: .35; pointer-events: none; }
+
+.rail-left{ left: -6px; }
+.rail-right{ right: -6px; }
+
+/* ===== Word Card ===== */
+.word-card{
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 12px 10px;
+  display: grid; gap: 8px;
+}
+.main-word{
+  display: grid; gap: 6px;
+}
+.main-word .ar{
+  font-family: var(--font-ar);
+  font-size: 1.65rem;
+  line-height: 1.5;
+  direction: rtl;
+  text-align: center;
+  color: #0b4742;
+}
+.main-word .bn{
+  font-size: 1rem;
+  text-align: center;
+  color: var(--ink-main);
+}
+.chips{
+  display: flex; flex-wrap: wrap; gap: 6px;
+  justify-content: center;
+}
+.chip{
+  font-size: .78rem;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: var(--chip-bg);
+  color: var(--chip-ink);
+  border: 1px solid #d7ece9;
+}
+
+/* Derived list */
+.derived{
+  margin-top: 6px;
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  display: grid; gap: 8px;
+}
+.derived-item{
+  display: grid; gap: 4px;
+  padding: 8px;
+  background: #fafefe;
+  border: 1px solid #e7f3f1;
+  border-radius: 10px;
+}
+.derived-item .ar{
+  font-family: var(--font-ar);
+  /* Slightly larger Arabic for related forms (your request) */
+  font-size: 1.25rem;
+  line-height: 1.5;
+  direction: rtl;
+  text-align: center;
+  color: #0b4742;
+}
+.derived-meta{
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+}
+.derived-meta .chip{ padding: 3px 7px; font-size: .74rem; }
+
+/* Utilities */
+.sr-only{
+  position: absolute !important;
+  width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
