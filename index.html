@@ -4,25 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Qur’an Word Explorer</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="site-header header-compact">
-    <h1 class="site-title">Qur’an Word Explorer</h1>
-    <div class="toolbar">
-      <label for="surahSelect" class="sr-only">Choose Surah</label>
-      <select id="surahSelect" aria-label="Choose Surah"></select>
+  <header class="site-header">
+    <div class="container header-inner">
+      <h1 class="app-title">Qur’an Word Explorer</h1>
+
+      <!-- Deck / Surah selector -->
+      <div class="deck-picker">
+        <label for="deckSelect" class="sr-only">Select Surah/Deck</label>
+        <select id="deckSelect" aria-label="Select Surah/Deck"></select>
+      </div>
     </div>
+    <div id="status" class="status"></div>
   </header>
 
   <main class="container">
-    <section id="status" role="status" aria-live="polite"></section>
-    <section id="surahMount"></section>
+    <section id="surahHeader" class="surah-header" aria-live="polite"></section>
+
+    <section id="verses" class="verses"></section>
   </main>
 
-  <script src="./app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
