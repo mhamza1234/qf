@@ -1,48 +1,38 @@
 <!DOCTYPE html>
 <html lang="bn" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Qur'an Word Explorer</title>
 
-  <!-- Fonts: Arabic + Latin/Bangla -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&family=Roboto:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
-    <div class="container header-inner">
+    <div class="header-inner">
       <h1 class="app-title">Qur'an Word Explorer</h1>
 
       <div class="controls">
         <label for="surahSelect" class="sr-only">Select Surah</label>
-        <select id="surahSelect" aria-label="Select Surah"></select>
+        <select id="surahSelect" class="select">
+          <!-- populated by JS -->
+        </select>
+        <span id="loadStatus" class="load-status" aria-live="polite"></span>
       </div>
     </div>
   </header>
 
-  <main class="container" id="app">
-    <!-- Surah header -->
-    <section id="surahHeader" class="surah-header" aria-live="polite">
-      <!-- Filled by JS -->
-    </section>
-
-    <!-- Verses go here -->
-    <section id="verses" class="verses">
-      <!-- Filled by JS -->
-    </section>
+  <main id="content" class="container" role="main">
+    <!-- Populated by JS -->
   </main>
 
   <footer class="site-footer">
-    <div class="container footer-inner">
-      <small>© <span id="year"></span> Qur'an Word Explorer</small>
-    </div>
+    <small>Built for learners — readable, welcoming, and accessible.</small>
   </footer>
 
   <script src="app.js"></script>
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
 </body>
 </html>
