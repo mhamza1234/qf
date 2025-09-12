@@ -1,176 +1,309 @@
-/* ====== Theme ====== */
+/* -----------------------
+   Base & Layout
+------------------------ */
 :root{
-  --bg:#FAFAF7;          /* off-white background to reduce glare */
-  --card:#FFFFFF;        /* paper white for content blocks */
-  --ink:#1F2937;         /* primary text */
-  --muted:#4B5563;       /* secondary text */
-  --teal:#0F766E;        /* gentle teal accent (headers, ribbons) */
-  --teal-veil: rgba(15,118,110,.06);
-  --chip:#E6F4F1;        /* root/pattern chips */
-  --border:#E5E7EB;      /* hairline borders */
-  --shadow:0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.04);
+  --bg: #0f172a;            /* deep slate (dark mode-friendly) */
+  --panel: #111827;         /* panel body */
+  --card: #0b1220;          /* card background */
+  --ink: #e5e7eb;           /* primary text */
+  --ink-dim: #cbd5e1;       /* secondary text */
+  --accent: #14b8a6;        /* teal accent */
+  --accent-2: #22c55e;      /* green accent */
+  --warn: #ef4444;          /* error */
+  --ring: rgba(20,184,166,.25);
+
+  --radius: 16px;
+  --shadow: 0 10px 24px rgba(0,0,0,.25);
 }
 
-*{ box-sizing:border-box; }
-html,body{ margin:0; padding:0; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
 body{
-  font-family:'Inter', system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-  background:var(--bg);
-  color:var(--ink);
-  line-height:1.6;
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Bengali", "Noto Sans", sans-serif;
+  background: linear-gradient(180deg, var(--bg), #0b1021 60%, #09122a 100%);
+  color: var(--ink);
 }
 
-/* ====== Header ====== */
+.container{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* -----------------------
+   Header
+------------------------ */
 .site-header{
-  position:sticky; top:0; z-index:10;
-  background:linear-gradient(180deg, #fff, #fff0 80%);
-  border-bottom:1px solid var(--border);
-  backdrop-filter:saturate(120%) blur(4px);
-}
-.header-compact{ padding:.6rem 1rem; }
-.site-title{
-  margin:.2rem 0 .5rem;
-  font-size:clamp(1.1rem, 1.2vw + .6rem, 1.4rem);
-  font-weight:700;
-}
-.toolbar{ display:flex; gap:.5rem; align-items:center; }
-select{
-  border:1px solid var(--border);
-  border-radius:10px; padding:.5rem .7rem;
-  background:#fff; color:var(--ink);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(180deg, #0d162f, #0b1220);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  box-shadow: 0 6px 20px rgba(0,0,0,.25);
 }
 
-/* ====== Layout ====== */
-.container{ max-width:1100px; margin:0 auto; padding:1rem .75rem 2.5rem; }
-#status{ margin:.5rem 0 1rem; color:var(--muted); font-size:.95rem; }
+.header-inner{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-/* ====== Surah Header / Ayah Area ====== */
-.ayah-header{
-  background:linear-gradient(180deg, var(--teal-veil), transparent 60%);
-  padding:1rem .75rem 1.25rem;
-  text-align:center;
-  margin:.4rem 0 .2rem;
-  border-radius:12px;
+.app-title{
+  margin: 8px 0;
+  font-size: 1.15rem;
+  letter-spacing: .25px;
+  color: var(--ink);
 }
-.ayah-number{
-  display:inline-block;
-  font-size:.9rem;
-  color:var(--muted);
-  margin-bottom:.25rem;
+
+.deck-picker{
+  margin-left: auto;
 }
+
+#deckSelect{
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+  box-shadow: inset 0 0 0 1px transparent;
+}
+
+#deckSelect:focus{
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+/* status line */
+.status{
+  min-height: 22px;
+  font-size: .9rem;
+  color: var(--ink-dim);
+  padding: 2px 16px 10px 16px;
+}
+.status.error{ color: var(--warn); }
+
+/* -----------------------
+   Surah Header (title & baselines)
+------------------------ */
+.surah-header{
+  background: linear-gradient(180deg, #0e1730, #0b1326);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: var(--radius);
+  padding: 18px 18px 12px;
+  margin: 18px 0 10px 0;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.surah-title-ar{
+  font-family: "Amiri", "Scheherazade", "Noto Naskh Arabic", serif;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2vw + 1rem, 2.2rem);
+  color: var(--ink);
+  margin: 0 0 4px 0;
+  direction: rtl;
+}
+
+.surah-title-bn{
+  font-size: 1rem;
+  color: var(--ink-dim);
+  margin: 0 0 6px 0;
+}
+
+/* -----------------------
+   Verse block
+------------------------ */
+.verse{
+  border: 1px solid rgba(255,255,255,.06);
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin: 18px 0;
+  overflow: hidden;
+}
+
+/* verse heading (ayah number + Arabic & Bangla lines) */
+.verse-head{
+  padding: 18px 18px 12px;
+  text-align: center;
+  background: linear-gradient(180deg, #0e1428, #0c1424);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.ayah-meta{
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-dim);
+  font-size: .95rem;
+  margin-bottom: 8px;
+}
+
+.badge{
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(20,184,166,.15);
+  color: var(--accent);
+  border: 1px solid rgba(20,184,166,.35);
+  font-weight: 600;
+}
+
 .ayah-ar{
-  font-family:'Amiri', serif;
-  font-size:clamp(1.6rem, 2.6vw + .5rem, 2.4rem);
-  line-height:1.9;
-  margin:.25rem 0 .5rem;
-  text-align:center;
-  direction:rtl;
-  color:#0b3f39;
+  font-family: "Amiri", "Scheherazade", "Noto Naskh Arabic", serif;
+  font-size: clamp(1.35rem, 2vw + .8rem, 2.1rem);
+  line-height: 2.2;
+  direction: rtl;
+  color: var(--ink);
+  margin: 0 0 6px 0;
 }
+
 .ayah-bn{
-  font-size:clamp(1.05rem, .8vw + .7rem, 1.25rem);
-  line-height:1.8;
-  color:var(--muted);
-  margin:0;
-  text-align:center;
+  margin: 0;
+  font-size: 1rem;
+  color: var(--ink-dim);
 }
 
-/* ====== Ayah Block ====== */
-.ayah-block{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-  box-shadow:var(--shadow);
-  padding:.75rem .5rem 1rem;
-  margin:0 0 1rem;
+/* -----------------------
+   Netflix-style carousel of word cards
+------------------------ */
+.word-row{
+  position: relative;
+  padding: 14px 8px 18px;
+  overflow: hidden;
 }
 
-/* ====== Word Carousel (Netflix-style row) ====== */
-.word-carousel{
-  display:flex;
-  gap:12px;
-  overflow-x:auto;
-  padding:8px 2px 14px;
-  scroll-snap-type:x mandatory;
-  -webkit-overflow-scrolling: touch;
+.scroller{
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(260px, 1fr);
+  gap: 12px;
+  overflow-x: auto;
+  padding: 6px 6px 12px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
 }
-.word-carousel::-webkit-scrollbar{ height:10px; }
-.word-carousel::-webkit-scrollbar-thumb{
-  background:rgba(0,0,0,.15); border-radius:10px;
+.scroller::-webkit-scrollbar{ height: 10px; }
+.scroller::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.15);
+  border-radius: 10px;
+}
+.scroller::-webkit-scrollbar-track{ background: transparent; }
+
+/* -----------------------
+   Word Card
+------------------------ */
+.card{
+  scroll-snap-align: start;
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 14px;
+  padding: 12px 12px 10px 12px;
+  box-shadow: 0 10px 18px rgba(0,0,0,.3);
+  display: grid;
+  gap: 10px;
 }
 
-/* ====== Word Card ====== */
-.word-card{
-  scroll-snap-align:start;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-  box-shadow:var(--shadow);
-  padding:12px 12px 10px;
-  min-width:260px;
-  max-width:360px;
-  display:flex;
-  flex-direction:column;
+/* Main (top) section */
+.card-main{
+  border-bottom: 1px dashed rgba(255,255,255,.08);
+  padding-bottom: 10px;
 }
 
-/* Main vs Derived separation */
-.main-word{ margin-bottom:.25rem; }
-.main-ar{
-  font-family:'Amiri', serif;
-  font-size:1.6rem;        /* a bit bigger (you asked) */
-  line-height:1.6;
-  text-align:right;
-  direction:rtl;
-}
-.main-bn{ font-size:1rem; margin:.25rem 0 .35rem; }
-.meta{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
-.meta-tr{ font-size:.9rem; color:var(--muted); }
-
-/* Chips */
-.chip{
-  display:inline-block;
-  padding:.2rem .5rem;
-  border-radius:999px;
-  font-size:.8rem;
-  border:1px solid var(--border);
-  background:var(--chip);
-  white-space:nowrap;
-}
-.chip-pattern{ }
-.chip-root{ }
-
-/* Divider */
-.divider{
-  height:1px;
-  background:var(--border);
-  margin:.4rem 0 .35rem;
+.word-ar{
+  font-family: "Amiri", "Scheherazade", "Noto Naskh Arabic", serif;
+  direction: rtl;
+  text-align: right;
+  font-size: 1.55rem; /* Arabic main word size */
+  color: var(--ink);
+  margin: 0 0 2px 0;
 }
 
-/* Derived */
-.derived{ display:flex; flex-direction:column; gap:.35rem; }
-.derived-row{
-  display:grid;
-  grid-template-columns: minmax(70px, 1fr) auto 1.3fr auto;
-  align-items:center;
-  column-gap:.5rem;
+.word-bn{
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 1rem;
 }
-.drv-ar{
-  font-family:'Amiri', serif;
-  font-size:1.3rem;       /* slightly larger for readability */
-  text-align:right;
-  direction:rtl;
-}
-.drv-tr{ font-size:.9rem; color:var(--muted); }
-.drv-bn{ font-size:.95rem; }
 
-/* Helpers */
+.word-metadata{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin-top: 6px;
+}
+
+.meta-pill{
+  display: inline-block;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: .9rem;
+  color: var(--ink);
+  text-align: right;
+}
+
+/* Derived list */
+.derived{
+  display: grid;
+  gap: 8px;
+}
+
+.der-item{
+  background: linear-gradient(180deg, rgba(20,184,166,.12), rgba(20,184,166,.06));
+  border: 1px solid rgba(20,184,166,.35);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+
+.der-top{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.der-ar{
+  font-family: "Amiri", "Scheherazade", "Noto Naskh Arabic", serif;
+  direction: rtl;
+  text-align: right;
+  font-size: 1.25rem; /* a touch larger per your ask */
+  margin: 0;
+  color: var(--ink);
+}
+
+.der-bn{
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: .95rem;
+}
+
+.der-meta{
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.der-pill{
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: .85rem;
+  color: var(--ink);
+}
+
+/* Utility */
 .sr-only{
-  position:absolute !important; width:1px; height:1px;
-  padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
 }
 
-/* Responsive */
-@media (max-width:520px){
-  .word-card{ min-width:82vw; max-width:88vw; }
-  .derived-row{ grid-template-columns: minmax(60px, .9fr) auto 1fr auto; }
+/* Responsive tweak */
+@media (max-width: 640px){
+  .scroller{ grid-auto-columns: 88vw; }
 }
