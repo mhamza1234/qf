@@ -2,54 +2,41 @@
 <html lang="bn" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Qur'an Word Explorer</title>
-  <link rel="stylesheet" href="styles.css"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- RTL header: mirrored layout -->
-  <header class="site-header">
-    <div class="header-row">
-      <div class="header-actions">
-        <button class="nav-btn" id="prevAyah" aria-label="الآية السابقة">⟵</button>
-        <button class="nav-btn" id="nextAyah" aria-label="الآية التالية">⟶</button>
-      </div>
-
-      <h1 class="app-title">Qur'an Word Explorer</h1>
-
-      <div class="header-controls">
-        <label for="surahSelect" class="sr-only">Select Surah</label>
-        <select id="surahSelect" class="select"></select>
-      </div>
+  <header class="topbar">
+    <div class="brand">Qur'an Word Explorer</div>
+    <div class="controls">
+      <label class="select-wrap">
+        <span class="sr-only">Select Surah</span>
+        <select id="surahSelect" aria-label="Select Surah"></select>
+      </label>
     </div>
   </header>
 
-  <main id="app" class="container">
-    <section id="surahHeader" class="surah-header">
-      <h2 id="surahTitleAr" class="surah-title-ar" lang="ar" dir="rtl"></h2>
-      <h3 id="surahTitleBn" class="surah-title-bn" lang="bn" dir="ltr"></h3>
+  <main class="page">
+    <section class="ayah-head">
+      <h1 id="surahTitleAr" class="surah-ar" lang="ar" dir="rtl"></h1>
+      <div id="ayahHeader" class="ayah-title"></div>
+      <p id="ayahArabic" class="ayah-ar" lang="ar" dir="rtl"></p>
+      <p id="ayahBangla" class="ayah-bn" lang="bn" dir="ltr"></p>
     </section>
 
-    <section id="verseArea">
-      <article id="ayahCard" class="ayah-card">
-        <div class="ayah-top">
-          <div class="ayah-meta">
-            <span id="ayahNumber" class="ayah-number"></span>
-          </div>
-          <p id="ayahArabic" class="ayah-arabic" lang="ar" dir="rtl"></p>
-          <p id="ayahBangla" class="ayah-bangla" lang="bn" dir="ltr"></p>
-        </div>
-
-        <!-- Horizontal RTL word strip -->
-        <div class="word-strip-wrap">
-          <button class="strip-arrow" id="stripRight" aria-label="Scroll right visually">⟵</button>
-          <div id="wordStrip" class="word-strip" dir="rtl" tabindex="0" aria-label="Word tiles"></div>
-          <button class="strip-arrow" id="stripLeft" aria-label="Scroll left visually">⟶</button>
-        </div>
-      </article>
+    <section class="words-section">
+      <div id="wordStrip" class="word-strip" dir="rtl" aria-live="polite"></div>
     </section>
+
+    <nav class="pager">
+      <button id="prevAyah" class="btn" type="button" aria-label="Previous Ayah">←</button>
+      <span id="ayahPos" class="ayah-pos"></span>
+      <button id="nextAyah" class="btn" type="button" aria-label="Next Ayah">→</button>
+    </nav>
   </main>
 
   <script src="app.js"></script>
