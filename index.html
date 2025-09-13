@@ -1,41 +1,45 @@
-<!DOCTYPE html>
-<html lang="bn">
+<!doctype html>
+<html lang="bn" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Qur'an Word Explorer</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="ltr">
+<body>
   <header class="topbar">
-    <div class="brand">Qur'an Word Explorer</div>
+    <h1 class="app-title">Qur'an Word Explorer</h1>
 
-    <div class="controls">
-      <div class="dir-toggle">
-        <button id="dirBtn" class="chip">LTR</button>
-      </div>
+    <div class="topbar-controls">
+      <button id="dirToggle" class="pill">LTR</button>
 
-      <label class="chip ghost">Select Surah</label>
-      <select id="surahPicker" class="sel">
-        <!-- Populated from manifest.json -->
-      </select>
+      <label class="select-wrap">
+        <span class="sr-only">Select Surah</span>
+        <select id="surahSelect"></select>
+      </label>
     </div>
   </header>
 
-  <main class="stage">
-    <h1 id="surahTitleAr" class="title-ar">سورة الملك</h1>
-    <h2 id="surahTitleBn" class="title-bn">আল-মুলক</h2>
+  <main class="page">
+    <section class="surah-head">
+      <div class="ayah-chip" id="ayahChip">Ayah 1</div>
+      <h2 id="surahTitleAr" class="surah-title-ar">سورة</h2>
+      <div id="surahTitleBn" class="surah-title-bn">—</div>
+      <p id="ayahArabic" class="ayah-ar" lang="ar" dir="rtl"></p>
+      <p id="ayahBangla" class="ayah-bn" lang="bn" dir="ltr"></p>
+    </section>
 
-    <div class="ayah-badge" id="ayahNumber">Ayah 1</div>
+    <section class="carousel-wrap">
+      <button class="nav-btn" id="btnPrev" aria-label="Previous">
+        <span class="icon-chevron">‹</span>
+      </button>
 
-    <div id="ayahArabic" class="ayah-ar">تَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ</div>
-    <div id="ayahBangla" class="ayah-bn">বরকতময় তিনি—যাঁর হাতে সব কর্তৃত্ব; তিনি সবকিছুর উপর সর্বশক্তিমান।</div>
+      <div id="wordRow" class="word-strip" aria-live="polite"></div>
 
-    <div class="carousel">
-      <button id="prevBtn" class="nav-btn" aria-label="Previous">‹</button>
-      <div id="cardsRow" class="cards-row"></div>
-      <button id="nextBtn" class="nav-btn" aria-label="Next">›</button>
-    </div>
+      <button class="nav-btn" id="btnNext" aria-label="Next">
+        <span class="icon-chevron">›</span>
+      </button>
+    </section>
   </main>
 
   <script src="app.js"></script>
