@@ -1,142 +1,113 @@
-/* ===== Color tokens (warm dark) ===== */
 :root{
+  /* Dark, warm palette (easy on eyes) */
   --bg:#1C1C1C;
   --tile:#2C2C2E;
-  --text-hi:#F2F4F8;
-  --text-mid:#C9CDD3;
-  --text-low:#A9A9A9;
-  --accent:#FFC857;
-  --soft:#3A3A3D;
-  --shadow: 0 10px 24px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.25);
+  --tileElev:#303035;
+  --text:#F2F4F8;
+  --muted:#A9A9A9;
+  --accent:#FFC857;      /* warm gold */
+  --accent-weak:#8f6e2b;
+  --chip:#3a3a3f;
+  --chipText:#e9eef6;
+  --shadow: 0 8px 24px rgba(0,0,0,.35);
+  --radius:16px;
+
+  /* Type scale */
+  --h1:24px; /* app title */
+  --h2-ar:48px; /* surah arabic */
+  --ayah-ar:32px; /* ayah arabic */
+  --h3:18px; /* surah bn + badges */
+  --body:16px;
+  --small:14px;
 }
 
 *{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text-hi);
-  font:16px/1.6 Roboto, Arial, sans-serif;
-}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Roboto,system-ui,-apple-system,"Segoe UI","Noto Sans",Arial,sans-serif}
+body[dir="rtl"]{direction:rtl}
 
-/* ===== Header (mirrors when .rtl on body) ===== */
-.site-header{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:1rem; padding:12px 18px; border-bottom:1px solid var(--soft);
-  position:sticky; top:0; background:linear-gradient(180deg,#1C1C1C 85%, rgba(28,28,28,.9));
-  z-index:10;
-}
-body.rtl .site-header{ flex-direction:row-reverse; }
+/* Topbar */
+.topbar{padding:18px 18px 6px}
+.brand-row{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.app-title{font-size:var(--h1);font-weight:700;margin:0}
+.top-actions{display:flex;gap:10px;align-items:center}
+.pill{background:var(--tile);border:1px solid #36363b;color:var(--text);padding:8px 12px;border-radius:999px;cursor:pointer}
+.pill--label{display:flex;align-items:center;gap:8px}
+.pill select{background:transparent;border:none;color:var(--text);font-size:var(--body);outline:none}
+.subtitle{margin:6px 2px 0;color:var(--muted);font-size:var(--small)}
 
-.brand h1{margin:0; font-size:24px; font-weight:700; color:var(--text-hi)}
-.brand small{display:block; color:var(--text-low); margin-top:2px}
+/* Verse header (centered) */
+.verse-header{max-width:1100px;margin:26px auto 10px;padding:0 16px;text-align:center}
+.surah-ar{font-family:"Noto Sans Arabic",system-ui; font-weight:700; font-size:var(--h2-ar); margin:6px 0 0}
+.surah-bn{font-size:var(--h3);margin:3px 0 12px;color:var(--muted)}
+.ayah-badge{display:inline-block;background:var(--accent);color:#1b1400;border-radius:999px;padding:6px 14px;font-weight:700;font-size:var(--h3);margin:4px 0 12px}
+.ayah-arabic{font-family:"Noto Sans Arabic",system-ui; font-size:var(--ayah-ar); line-height:1.9; margin:0}
+.ayah-bangla{font-size:var(--body);color:var(--muted);margin:8px 0 0}
 
-.controls{display:flex; align-items:center; gap:.5rem}
-body.rtl .controls{ flex-direction:row-reverse; }
-.controls label{color:var(--text-mid); font-size:14px}
+/* Cards */
+.cards-row{
+  display:flex; gap:18px; padding:18px; overflow-x:auto; scroll-snap-type:x mandatory;
+}
+.cards-row::-webkit-scrollbar{height:10px}
+.cards-row::-webkit-scrollbar-thumb{background:#2b2b30;border-radius:999px}
 
-.controls select{
-  appearance:none; background:var(--tile); color:var(--text-hi);
-  border:1px solid var(--soft); border-radius:8px; padding:.5rem .75rem;
-  box-shadow:var(--shadow);
-}
-
-.dir-toggle{
-  background:rgba(255,255,255,.08);
-  color:var(--text-hi);
-  border:1px solid var(--soft);
-  border-radius:999px;
-  padding:.4rem .75rem;
-  cursor:pointer;
-  box-shadow:var(--shadow);
-  font-size:14px;
-}
-
-/* ===== Surah Meta ===== */
-.surah-meta{
-  max-width:1200px; margin:22px auto 10px; padding:0 16px; text-align:center;
-}
-.surah-ar{
-  font-family:"Noto Sans Arabic","Tajawal","Amiri",serif;
-  font-size:48px; font-weight:800; margin:.25rem 0; letter-spacing:.5px;
-}
-.surah-bn{
-  font-size:18px; color:var(--text-mid); margin:0 0 12px;
-}
-
-/* ===== Verses ===== */
-.verses{
-  max-width:1200px; margin:0 auto; padding:0 16px 40px;
-  display:flex; flex-direction:column; gap:24px;
-}
-
-.verse-head{
-  display:flex; flex-direction:column; align-items:center; gap:8px;
-  padding:12px 10px; border-radius:12px; background:transparent;
-}
-.ayah-line{
-  font-family:"Noto Sans Arabic","Tajawal","Amiri",serif;
-  font-size:32px; line-height:1.9; text-align:center; direction:rtl;
-  margin:0; word-wrap:break-word;
-}
-.ayah-tag{
-  display:inline-block; margin-top:6px; padding:2px 8px; border-radius:999px;
-  background:rgba(255,200,87,.15); color:var(--accent); font-weight:700; font-size:14px;
-  border:1px solid rgba(255,200,87,.3);
-}
-.ayah-bn{
-  text-align:center; margin:0; color:var(--text-mid); font-size:16px; direction:ltr;
-}
-
-/* ===== Word tiles rail (RTL flow) ===== */
-.words-rail{
-  display:flex; flex-wrap:wrap; gap:12px; margin-top:8px;
-  direction:rtl; /* traverse like the verse */
-  justify-content:flex-start;
-}
-
-/* Tile (variable width) */
 .word-card{
-  background:var(--tile); border:1px solid var(--soft);
-  border-radius:14px; padding:10px 12px; box-shadow:var(--shadow);
-  display:flex; flex-direction:column; gap:8px; min-width:180px; max-width:360px;
-  flex:0 1 auto;
+  scroll-snap-align:start;
+  background:linear-gradient(180deg,var(--tile),var(--tileElev));
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  min-width:260px; max-width:340px; width:clamp(260px,28vw,340px);
+  display:flex; flex-direction:column; padding:16px;
+  gap:12px;
 }
 
-/* Main vs Derived separation */
-.word-main{ padding-bottom:8px; border-bottom:1px dashed rgba(255,255,255,.12) }
-.word-main .w-ar{
-  font-family:"Noto Sans Arabic","Tajawal","Amiri",serif;
-  font-size:26px; line-height:1.3; font-weight:700; margin:0; text-align:left; direction:rtl;
-}
-.word-main .w-bn{margin:2px 0 0; color:var(--text-mid)}
-.word-main .w-tr{margin:0; color:var(--text-low); font-size:14px}
-.word-meta{display:flex; gap:10px; flex-wrap:wrap; margin-top:4px}
-.badge{
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
-  color:var(--text-mid); padding:2px 8px; border-radius:999px; font-size:12px;
+/* main / derived labels */
+.section-label{
+  display:inline-block;background:#3b3b40;color:#dfe6f6;border-radius:8px;
+  font-size:12px;font-weight:700;letter-spacing:.4px;padding:4px 8px;
 }
 
-.derived{ display:flex; flex-wrap:wrap; gap:8px; }
+/* Main word */
+.word-ar{
+  font-family:"Noto Sans Arabic",system-ui; font-size:36px; line-height:1.45; margin:2px 0 4px;
+}
+.word-bn{font-size:16px;margin:0;color:#e8ecf6}
+.meta-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  background:var(--chip); color:var(--chipText);
+  padding:6px 10px; border-radius:999px; font-size:13px;
+}
+
+/* Divider */
+.hr{height:1px;background:#3c3c40;margin:2px 0 6px}
+
+/* Derived summary area (collapsed) */
+.derived-summary{display:flex;gap:8px;flex-wrap:wrap}
+.more-btn{
+  background:transparent;border:1px dashed #5a5a63;color:var(--muted);
+  padding:5px 10px;border-radius:999px;cursor:pointer
+}
+.more-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Derived grid (expanded) */
+.derived-grid{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:6px;
+}
 .derived-item{
-  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
-  border-radius:10px; padding:6px 8px; min-width:120px; max-width:100%;
+  background:#2b2b31;border:1px solid #404049;border-radius:12px;padding:10px;
 }
-.derived-item .d-ar{
-  font-family:"Noto Sans Arabic","Tajawal","Amiri",serif;
-  font-size:20px; font-weight:700; line-height:1.2; margin:0; direction:rtl; text-align:left;
-}
-.derived-item .d-bn{margin:2px 0 0; color:var(--text-mid); font-size:14px}
-.derived-item .d-tr{margin:0; color:var(--text-low); font-size:12px}
-.derived-item .d-pat{margin:2px 0 0; color:var(--text-low); font-size:12px}
+.derived-ar{font-family:"Noto Sans Arabic"; font-size:24px;margin:0 0 2px}
+.derived-bn{font-size:14px;color:#dfe7f6;margin:0 0 6px}
+.derived-line{display:flex;gap:6px;flex-wrap:wrap}
+.derived-line .chip{font-size:12px}
 
-/* Footer */
-.site-footer{
-  border-top:1px solid var(--soft); padding:14px 18px; color:var(--text-low); text-align:center;
-}
+/* Verse navigation */
+.verse-nav{display:flex;justify-content:center;align-items:center;gap:12px;margin:12px 0 28px}
+.nav-btn{background:var(--tile);border:1px solid #3b3b41;color:var(--text);padding:8px 12px;border-radius:10px;cursor:pointer}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ayah-counter{color:var(--muted);font-size:var(--small)}
 
-/* Responsive */
-@media (max-width:700px){
-  .surah-ar{font-size:40px}
-  .ayah-line{font-size:28px}
-}
+.footer-tip{color:var(--muted);font-size:var(--small);text-align:center;margin:20px 0 28px}
+
+/* RTL mirroring for topbar row when body[dir=rtl] */
+body[dir="rtl"] .brand-row{flex-direction:row-reverse}
+body[dir="rtl"] .top-actions{flex-direction:row-reverse}
