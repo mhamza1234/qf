@@ -1,92 +1,184 @@
+/* ============ Root Theme ============ */
 :root{
-  --bg:#121212;
-  --tile:#2A2A2D;
-  --tile-2:#1F1F21;
-  --text:#EAECEE;
-  --muted:#B8BDC6;
+  --bg:#111214;
+  --panel:#242528;
+  --tile:#2C2C2E;
+  --text:#EEEFF3;
+  --muted:#B7BCC6;
+  --chip:#3A3B40;
   --accent:#FFC857;
-  --chip:#3A3A3E;
-  --chip-text:#EDEFF3;
-  --shadow: 0 8px 24px rgba(0,0,0,.35);
-  --r:14px;
+  --accent-2:#FFB43A;
+  --shadow:0 10px 24px rgba(0,0,0,.35);
+  --radius:18px;
 }
 
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
-  margin:0; background:var(--bg); color:var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", Arial, "Noto Sans Bengali", sans-serif;
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", Ubuntu, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
 }
 
-/* Topbar */
+/* ============ Topbar ============ */
 .topbar{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:12px 18px; position:sticky; top:0; z-index:5;
-  background:linear-gradient(180deg, rgba(12,12,12,.8), rgba(12,12,12,0));
-  backdrop-filter:saturate(130%) blur(6px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 20px;
+  position:sticky;
+  top:0;
+  background:linear-gradient(180deg, rgba(17,18,20,.95), rgba(17,18,20,.85));
+  backdrop-filter: blur(6px);
+  z-index:10;
+  border-bottom:1px solid #1b1c1f;
 }
-.brand{font-weight:700; letter-spacing:.3px}
-.controls{display:flex; gap:10px; align-items:center}
-.chip{background:var(--chip); color:var(--chip-text); border:none; padding:6px 10px; border-radius:999px; font-weight:600}
-.chip.ghost{background:transparent; color:var(--muted)}
-.sel{background:var(--chip); color:var(--chip-text); border:none; padding:8px 10px; border-radius:10px}
+.app-title{margin:0;font-size:20px;color:var(--text)}
+.topbar-controls{display:flex; gap:12px; align-items:center}
+.pill{
+  border:0;
+  background:var(--chip);
+  color:var(--text);
+  border-radius:999px;
+  padding:8px 14px;
+  cursor:pointer;
+}
+.select-wrap select{
+  appearance:none;
+  background:var(--chip);
+  color:var(--text);
+  border:0;
+  border-radius:999px;
+  padding:10px 16px;
+}
 
-/* Headings & ayah */
-.stage{max-width:1200px; margin:0 auto; padding:24px 16px}
-.title-ar{font-size:44px; font-weight:800; text-align:center; margin:16px 0 0}
-.title-bn{font-size:18px; text-align:center; color:var(--muted); margin:8px 0 20px}
-.ayah-badge{display:inline-block; margin:0 auto 12px; background:var(--accent); color:#1C1C1C; padding:6px 14px; border-radius:999px; font-weight:800; text-align:center}
-.ayah-ar{font-family:"Noto Sans Arabic","Amiri","Scheherazade New",serif; font-size:34px; text-align:center; margin:10px 0 6px}
-.ayah-bn{font-size:18px; text-align:center; color:var(--muted); margin-bottom:22px}
+/* ============ Surah Header ============ */
+.page{max-width:1280px; margin:0 auto; padding:24px 16px}
+.surah-head{ text-align:center; margin:8px auto 24px auto; }
+.ayah-chip{
+  display:inline-block;
+  background:var(--accent);
+  color:#1b1b1b;
+  border-radius:999px;
+  padding:6px 14px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+.surah-title-ar{
+  font-family: "Noto Sans Arabic", "Amiri", "Scheherazade New", serif;
+  font-size:48px; margin:0 0 6px 0; letter-spacing:.5px;
+}
+.surah-title-bn{color:var(--muted); margin:0 0 8px 0}
+.ayah-ar{
+  font-family: "Noto Sans Arabic","Amiri","Scheherazade New", serif;
+  font-size:32px; line-height:1.8; margin:6px 0 8px 0;
+}
+.ayah-bn{ color:var(--muted); margin:0 }
 
-/* Carousel */
-.carousel{display:grid; grid-template-columns:48px 1fr 48px; align-items:center; gap:10px}
+/* ============ Carousel ============ */
+.carousel-wrap{
+  display:grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items:stretch;
+  gap:10px;
+}
 .nav-btn{
-  width:40px; height:40px; border-radius:999px; border:none;
-  background:var(--tile); color:var(--text); box-shadow:var(--shadow);
-  cursor:pointer; font-size:22px; display:flex; align-items:center; justify-content:center;
+  border:0; background:var(--chip); color:var(--text);
+  border-radius:12px; width:48px; height:48px; align-self:center;
+  cursor:pointer;
 }
-.nav-btn[disabled]{opacity:.35; cursor:default}
+.icon-chevron{display:inline-block; font-size:24px; line-height:48px}
 
-.cards-row{
-  display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory;
-  padding:8px 4px 18px;
+.word-strip{
+  display:flex;
+  gap:16px;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  padding:8px;
 }
-.cards-row::-webkit-scrollbar{height:10px}
-.cards-row::-webkit-scrollbar-thumb{background:#3a3a3e; border-radius:999px}
 
-/* Card */
-.card{
-  scroll-snap-align:start; min-width:320px; max-width:420px; flex:0 0 auto;
-  background:var(--tile); border-radius:18px; box-shadow:var(--shadow); padding:16px;
-  display:flex; flex-direction:column; gap:12px;
+/* Word cards */
+.word-card{
+  min-width: 340px;                 /* cards are responsive; no fixed height */
+  max-width: 360px;
+  background:var(--tile);
+  border-radius:var(--radius);
+  box-shadow: var(--shadow);
+  padding:16px;
+  scroll-snap-align: start;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
 }
-.card .label{font-size:12px; font-weight:800; color:var(--accent); letter-spacing:.6px}
-.card .main-txt{font-family:"Noto Sans Arabic","Amiri","Scheherazade New",serif; font-size:44px; line-height:1.2; text-align:left}
-.card .bn{font-size:16px; color:var(--muted); text-align:left}
-.row-chips{display:flex; flex-wrap:wrap; gap:8px}
-.chip-pill{background:var(--chip); color:var(--chip-text); border:none; padding:6px 10px; border-radius:999px; font-weight:600; font-size:14px}
-
-/* Derived section */
-.derived-header{display:flex; align-items:center; justify-content:space-between; margin-top:8px}
-.toggle{background:var(--tile-2); color:var(--text); border:none; padding:8px 12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:700}
-.toggle .plus{width:20px; height:20px; display:inline-grid; place-items:center; border-radius:50%; background:var(--chip)}
-
-.derived-wrap{max-height:0; overflow:hidden; transition:max-height .25s ease, opacity .2s ease; opacity:.2}
-.derived-wrap.open{max-height:600px; opacity:1}
-
-.der-grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; margin-top:10px}
-.der{
-  background:var(--tile-2); border-radius:12px; padding:10px 12px;
+.card-head{
+  font-size:12px; font-weight:800; color:#d0d3db;
+  letter-spacing:.08em; opacity:.9;
 }
-.der .ar{font-family:"Noto Sans Arabic","Amiri",serif; font-size:28px; line-height:1.25}
-.der .bn{font-size:14px; color:var(--muted)}
-.der .pat{font-size:13px; opacity:.85}
+.word-ar{
+  font-family: "Noto Sans Arabic","Amiri","Scheherazade New", serif;
+  font-weight:800;
+  font-size:42px;        /* main Arabic word size */
+  line-height:1.2;
+  margin:4px 0 2px 0;
+  text-align:left;       /* as requested: left-aligned inside card */
+}
+.word-bn{ margin:0 0 4px 0; color:#d8dbe3; font-weight:600 }
+.chips{display:flex; flex-wrap:wrap; gap:8px; direction:ltr}
+.chip{
+  background:var(--chip);
+  color:var(--text);
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:13px;
+}
 
-/* RTL / LTR */
-body.rtl .ayah-ar{direction:rtl}
-body.rtl .title-ar{direction:rtl}
-body.rtl .cards-row{direction:ltr;} /* keep ltr container; order is reversed in JS */
+/* Derived toggle line */
+.derived-row{
+  display:flex; justify-content:space-between; align-items:center;
+  border-top:1px solid #3b3c41;
+  padding-top:10px; margin-top:6px;
+}
+.derived-label{ font-weight:800; color:#d0d3db; letter-spacing:.06em }
+.derived-toggle{
+  border:0; background:var(--chip); color:var(--text);
+  border-radius:999px; padding:6px 12px; cursor:pointer;
+  display:flex; align-items:center; gap:6px;
+}
+.derived-toggle .plus{ width:18px; height:18px; border-radius:50%; background:var(--accent-2); color:#1b1b1b; display:inline-grid; place-items:center; font-weight:800 }
 
-/* Arabic helper sizes (inside chips etc.) */
-.badge-ar{font-family:"Noto Sans Arabic","Amiri",serif; font-size:18px}
+/* Derived grid (collapsible) */
+.derived-grid{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap:10px;
+}
+.derived-tile{
+  background:#333438;
+  border-radius:12px;
+  padding:10px 12px;
+}
+.derived-ar{
+  font-family:"Noto Sans Arabic","Amiri","Scheherazade New", serif;
+  font-weight:800;
+  font-size:26px;         /* bigger for readability */
+  line-height:1.25;
+  margin:0 0 2px 0;
+}
+.derived-meta{ color:#cfd3de; display:flex; gap:6px; font-size:13px }
+
+/* RTL flipping for the STRIP (word-level order) */
+.rtl .word-strip{ flex-direction: row-reverse; }
+.rtl .word-card{ scroll-snap-align: end; }
+.rtl .icon-chevron{ transform: rotate(180deg) }
+
+/* Hide helper */
+[hidden]{ display:none !important; }
+
+/* small */
+@media (max-width: 780px){
+  .word-card{ min-width: 300px; }
+  .word-ar{ font-size:38px; }
+  .derived-ar{ font-size:24px; }
+}
