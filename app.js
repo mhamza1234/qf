@@ -1,221 +1,158 @@
-/* Qur'an Word Explorer
-   - Rightmost-first row (row-reverse) with leftward scrolling
-   - Warm dark theme
-   - Centered ayah + Bangla translation
-   - Cards with clear main/derived separation
-   - Variable-height tiles
-*/
-
-const sel = (q, el = document) => el.querySelector(q);
-const create = (tag, cls) => {
-  const el = document.createElement(tag);
-  if (cls) el.className = cls;
-  return el;
+// UI mirroring + rendering
+const els = {
+  surahSelect: document.getElementById('surahSelect'),
+  surahArabic: document.getElementById('surahArabic'),
+  surahBangla: document.getElementById('surahBangla'),
+  verses: document.getElementById('verses'),
+  dirToggle: document.getElementById('dirToggle'),
 };
 
-const state = {
-  manifest: null,
-  active: null,   // active manifest entry
-  data: null      // loaded surah data
-};
+let manifest = [];
+let allRoots = {};
 
-const loadStatus = sel('#loadStatus');
-const content = sel('#content');
-const surahSelect = sel('#surahSelect');
+init();
 
-/** Parse ayah number and surah number from "67:5" */
-function parseAyahId(ayahId){
-  const [s, a] = String(ayahId).split(':');
-  return { surahNum: Number(s), ayahNum: Number(a) };
+async function init(){
+  // Restore UI direction preference (default: RTL since Arabic is primary)
+  const savedDir = localStorage.getItem('uiDir');
+  const rtl = savedDir ? savedDir === 'rtl' : true;
+  applyUiDir(rtl);
+
+  // Load manifest + roots
+  try{
+    manifest = await fetchJSON('./manifest.json');
+  }catch(e){
+    alert('Could not load manifest. Check file path & hosting.');
+    throw e;
+  }
+
+  try{
+    allRoots = await fetchJSON('./data/all_roots.json');
+  }catch{
+    allRoots = {};
+  }
+
+  // Populate dropdown
+  els.surahSelect.innerHTML = manifest.map((m,i)=>
+    `<option value="${i}">${m.name}</option>`).join('');
+
+  // Load first
+  if (manifest.length){
+    els.surahSelect.value = '0';
+    loadSurahByIndex(0);
+  }
+
+  els.surahSelect.addEventListener('change', e=>{
+    loadSurahByIndex(Number(e.target.value));
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  els.dirToggle.addEventListener('click', ()=>{
+    const nowRtl = !document.body.classList.contains('rtl');
+    applyUiDir(nowRtl);
+    localStorage.setItem('uiDir', nowRtl ? 'rtl' : 'ltr');
+  });
 }
 
-/** Fetch JSON helper with nice error text */
-async function fetchJSON(path){
-  const res = await fetch(path, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`HTTP ${res.status} for ${path}`);
+function applyUiDir(isRtl){
+  document.body.classList.toggle('rtl', isRtl);
+  document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+  els.dirToggle.textContent = isRtl ? 'LTR' : 'RTL';
+  els.dirToggle.setAttribute('aria-label', isRtl ? 'Switch to LTR interface' : 'Switch to RTL interface');
+}
+
+async function loadSurahByIndex(idx){
+  const item = manifest[idx];
+  if(!item) return;
+  const data = await fetchJSON(item.json);
+  renderSurah(data);
+}
+
+function renderSurah(data){
+  els.surahArabic.textContent = data.name_ar || '—';
+  els.surahBangla.textContent = data.name_bn || '';
+
+  els.verses.innerHTML = (data.verses || []).map(v => renderVerse(v)).join('');
+}
+
+function renderVerse(v){
+  const ayahNum = getAyahNumber(v.ayah_id);
+  const cards = (v.words || []).map(w => renderWordCard(mergeDerived(w))).join('');
+
+  return `
+    <article class="verse" data-ayah-id="${v.ayah_id}">
+      <div class="verse-head">
+        <span class="ayah-tag">Ayah ${ayahNum}</span>
+        <p class="ayah-line" lang="ar" dir="rtl">${v.arabic || ''}</p>
+        <p class="ayah-bn" dir="ltr">${v.bangla || ''}</p>
+      </div>
+      <div class="words-rail" dir="rtl">
+        ${cards}
+      </div>
+    </article>
+  `;
+}
+
+function mergeDerived(w){
+  const out = {...w};
+  const given = Array.isArray(out.derived) ? out.derived.slice() : [];
+  if (out.root && allRoots[out.root]){
+    const seen = new Set(given.map(d=>d.ar));
+    allRoots[out.root].forEach(arForm=>{
+      if(!seen.has(arForm)){
+        given.push({ ar: arForm, bn:'', tr:'', pattern:'' });
+      }
+    });
+  }
+  out.derived = given;
+  return out;
+}
+
+function renderWordCard(w){
+  const meta = [
+    w.root ? `<span class="badge">${w.root}</span>` : '',
+    w.pattern ? `<span class="badge">${w.pattern}</span>` : ''
+  ].join('');
+
+  const derived = (w.derived || []).map(d=>`
+      <div class="derived-item">
+        <p class="d-ar" lang="ar" dir="rtl">${escapeHTML(d.ar || '')}</p>
+        ${d.bn ? `<p class="d-bn">${escapeHTML(d.bn)}</p>` : ''}
+        ${d.tr ? `<p class="d-tr">${escapeHTML(d.tr)}</p>` : ''}
+        ${d.pattern ? `<p class="d-pat">${escapeHTML(d.pattern)}</p>` : ''}
+      </div>
+  `).join('');
+
+  return `
+    <div class="word-card" dir="ltr">
+      <div class="word-main">
+        <p class="w-ar" lang="ar" dir="rtl">${escapeHTML(w.ar || '')}</p>
+        ${w.bn ? `<p class="w-bn">${escapeHTML(w.bn)}</p>` : ''}
+        ${w.tr ? `<p class="w-tr">${escapeHTML(w.tr)}</p>` : ''}
+        ${meta ? `<div class="word-meta">${meta}</div>` : ''}
+      </div>
+      ${derived ? `<div class="derived">${derived}</div>` : ''}
+    </div>
+  `;
+}
+
+function getAyahNumber(ayahId){
+  if(!ayahId) return '';
+  const p = String(ayahId).split(':');
+  return p[1] || '';
+}
+
+async function fetchJSON(url){
+  const res = await fetch(url, {cache:'no-store'});
+  if(!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return res.json();
 }
 
-/** Initialize */
-document.addEventListener('DOMContentLoaded', async () => {
-  try{
-    loadStatus.textContent = 'Loading manifest…';
-    // Manifest MUST be in site root as "manifest.json"
-    state.manifest = await fetchJSON('manifest.json');
-
-    // Populate dropdown
-    surahSelect.innerHTML = state.manifest.map((m, i) =>
-      `<option value="${i}">${m.name}</option>`
-    ).join('');
-
-    // choose first
-    state.active = state.manifest[0];
-    surahSelect.value = "0";
-
-    // Load first surah
-    await loadActive();
-  }catch(err){
-    console.error(err);
-    loadStatus.textContent = 'Could not load manifest. Check file path & hosting.';
-  }
-});
-
-surahSelect.addEventListener('change', async (e) => {
-  const idx = Number(e.target.value);
-  state.active = state.manifest[idx];
-  await loadActive();
-});
-
-async function loadActive(){
-  try{
-    loadStatus.textContent = 'Loading surah…';
-    state.data = await fetchJSON(state.active.json);
-    renderSurah(state.data, state.active);
-    loadStatus.textContent = '';
-  }catch(err){
-    console.error(err);
-    loadStatus.textContent = 'Could not load surah data. Check JSON path.';
-  }
-}
-
-/** Render entire surah */
-function renderSurah(data, meta){
-  content.innerHTML = '';
-
-  // Title area
-  const titleAr = create('h2', 'surah-title-ar');
-  titleAr.textContent = data.name_ar || '—';
-
-  // Build a human sub-title from first ayah id (no need for surah number in JSON)
-  const firstAyah = data?.verses?.[0]?.ayah_id || '';
-  const { surahNum } = parseAyahId(firstAyah);
-
-  const sub = create('div', 'surah-title-sub');
-  sub.textContent = `${meta.name} • Surah ${surahNum}`;
-
-  content.append(titleAr, sub);
-
-  // Verses
-  (data.verses || []).forEach(verse => {
-    content.append(renderAyah(verse));
-  });
-}
-
-/** Render one ayah block */
-function renderAyah(verse){
-  const { ayahNum } = parseAyahId(verse.ayah_id || '');
-
-  const wrap = create('section', 'ayah');
-
-  const header = create('div', 'ayah-header');
-  const num = create('div', 'ayah-number');
-  num.textContent = `Ayah ${isNaN(ayahNum) ? '?' : ayahNum}`;
-
-  const ar = create('p', 'ayah-ar');
-  ar.textContent = verse.arabic || '';
-
-  const bn = create('p', 'ayah-bn');
-  bn.textContent = verse.bangla || '';
-
-  header.append(num, ar, bn);
-  wrap.append(header);
-
-  // Cards row (RTL visual flow)
-  const row = create('div', 'cards-row');
-  (verse.words || []).forEach(word => {
-    row.append(renderWordCard(word));
-  });
-
-  wrap.append(row);
-
-  // After it’s in the DOM, move scroll to far right (so first word shows)
-  requestAnimationFrame(() => initAyahRowScrolling(row));
-
-  return wrap;
-}
-
-/** Render one word card (main + derived group inside) */
-function renderWordCard(w){
-  const card = create('article', 'word-card');
-
-  // MAIN block
-  const main = create('div', 'main-block');
-
-  const mainAr = create('div', 'main-ar');
-  mainAr.setAttribute('lang', 'ar');
-  mainAr.setAttribute('dir', 'rtl');
-  mainAr.textContent = w.ar || '';
-
-  const mainBn = create('div', 'main-bn');
-  mainBn.textContent = w.bn || '';
-
-  const metaLine = create('div', 'meta');
-  // Transliteration
-  if (w.tr) {
-    const b1 = create('span', 'badge');
-    b1.textContent = w.tr;
-    metaLine.append(b1);
-  }
-  // Root
-  if (w.root) {
-    const b2 = create('span', 'badge');
-    b2.textContent = w.root;
-    metaLine.append(b2);
-  }
-  // Pattern
-  if (w.pattern) {
-    const b3 = create('span', 'badge');
-    b3.textContent = w.pattern;
-    metaLine.append(b3);
-  }
-
-  main.append(mainAr, mainBn, metaLine);
-  card.append(main);
-
-  // Divider
-  const hasDerived = Array.isArray(w.derived) && w.derived.length > 0;
-  if (hasDerived){
-    card.append(create('div', 'divider'));
-
-    // Derived block
-    const dWrap = create('div', 'derived-wrap');
-    const dTitle = create('div', 'derived-title');
-    dTitle.textContent = 'Related forms';
-    dWrap.append(dTitle);
-
-    w.derived.forEach(d => {
-      const item = create('div', 'derived-item');
-
-      const dAr = create('div', 'derived-ar');
-      dAr.setAttribute('lang', 'ar');
-      dAr.setAttribute('dir', 'rtl');
-      dAr.textContent = d.ar || '';
-
-      const dLine = create('div', 'derived-line');
-      // bn (meaning), tr, pattern — compact, no labels (consistent order)
-      const parts = [];
-      if (d.bn) parts.push(d.bn);
-      if (d.tr) parts.push(d.tr);
-      if (d.pattern) parts.push(d.pattern);
-      dLine.textContent = parts.join(' • ');
-
-      item.append(dAr, dLine);
-      dWrap.append(item);
-    });
-
-    card.append(dWrap);
-  }
-
-  return card;
-}
-
-/** Put the row’s scroll position to the right end (for row-reverse lanes) */
-function initAyahRowScrolling(rowEl){
-  // First try
-  rowEl.scrollLeft = rowEl.scrollWidth;
-
-  // If first paint ignores it, try next frame
-  requestAnimationFrame(() => {
-    rowEl.scrollLeft = rowEl.scrollWidth;
-  });
+function escapeHTML(s){
+  return String(s || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
 }
