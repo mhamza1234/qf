@@ -1,8 +1,74 @@
 [
   {
-    "id": "mulk-full",
-    "name": "Al-Mulk (67) — Full",
-    "json": "data/mulk_full.json",
+    "id": "fatiha-full",
+    "name": "Al-Fātiḥah (1) — Full",
+    "json": "data/fatiha_full.json",
+    "mode": "full"
+  },
+  {
+    "id": "naas-full",
+    "name": "An-Nās (114) — Full",
+    "json": "data/naas_full.json",
+    "mode": "full"
+  },
+  {
+    "id": "falaq-full",
+    "name": "Al-Falaq (113) — Full",
+    "json": "data/falaq_full.json",
+    "mode": "full"
+  },
+  {
+    "id": "ikhlas-full",
+    "name": "Al-Ikhlāṣ (112) — Full",
+    "json": "data/ikhlas_full.json",
+    "mode": "full"
+  },
+  {
+    "id": "lahab-full",
+    "name": "Al-Masad / Lahab (111)",
+    "json": "data/lahab.json",
+    "mode": "full"
+  },
+  {
+    "id": "nasr-full",
+    "name": "An-Naṣr (110) — Full",
+    "json": "data/nasar_full.json",
+    "mode": "full"
+  },
+  {
+    "id": "kafirun-full",
+    "name": "Al-Kāfirūn (109) — Full",
+    "json": "data/kafirun_full.json",
+    "mode": "full"
+  },
+  {
+    "id": "kawthar-full",
+    "name": "Al-Kawthar (108) — Full",
+    "json": "data/kawthar_fill.json",
+    "mode": "full"
+  },
+  {
+    "id": "maun-full",
+    "name": "Al-Māʿūn (107) — Full",
+    "json": "data/maun_107_fill.json",
+    "mode": "full"
+  },
+  {
+    "id": "quraish-full",
+    "name": "Quraysh (106) — Full",
+    "json": "data/kuraish_106_full.json",
+    "mode": "full"
+  },
+  {
+    "id": "fil-full",
+    "name": "Al-Fīl (105) — Full",
+    "json": "data/fill_105_full.json",
+    "mode": "full"
+  },
+  {
+    "id": "humazah-full",
+    "name": "Al-Humazah (104) — Full",
+    "json": "data/fumajah_104_full.json",
     "mode": "full"
   }
 ]
