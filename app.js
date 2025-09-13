@@ -1,178 +1,192 @@
-// --- Minimal loader + state ---
-const state = {
-  dir: 'ltr',           // 'ltr' | 'rtl'
-  manifest: null,       // loaded manifest
-  current: null         // loaded surah data
-};
+// ---------- Config ----------
+const MANIFEST_URL = './manifest.json';     // root
+const WORD_STRIP_SELECTOR = '#wordRow';
 
-// Utility
-const $ = (q,root=document)=>root.querySelector(q);
-const $$ = (q,root=document)=>Array.from(root.querySelectorAll(q));
-const debounce = (fn,ms=150)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}};
+// ---------- State ----------
+let manifest = [];
+let currentDeck = null;          // selected surah manifest entry
+let surahData = null;            // object { surah, name_ar, name_bn, verses: [...] }
+let currentAyahIndex = 0;
 
-// Init
-document.addEventListener('DOMContentLoaded', async ()=>{
-  // direction toggle
-  $('#dirBtn').addEventListener('click', ()=>{
-    state.dir = state.dir === 'ltr' ? 'rtl' : 'ltr';
-    document.body.classList.toggle('rtl', state.dir==='rtl');
-    document.body.classList.toggle('ltr', state.dir==='ltr');
-    $('#dirBtn').textContent = state.dir.toUpperCase();
-    // re-render current ayah with correct word order
-    if(state.current) renderAyah(state.current.verses[0]);
-  });
-
-  // load manifest
-  try{
-    const m = await fetch('manifest.json').then(r=>r.json());
-    state.manifest = m;
-    const sel = $('#surahPicker');
-    m.forEach(item=>{
-      const opt = document.createElement('option');
-      opt.value = item.json;
-      opt.textContent = item.name;
-      sel.appendChild(opt);
-    });
-    // default pick first
-    await loadSurah(sel.value);
-    sel.addEventListener('change', ()=>loadSurah(sel.value));
-  }catch(e){
-    console.error('Manifest error', e);
-    alert('Could not load manifest. Check file path & hosting.');
-  }
+// ---------- Boot ----------
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadManifest();
+  await initSurahSelect();
+  bindUI();
+  await loadSelectedSurah();
 });
 
-async function loadSurah(path){
-  const data = await fetch(path).then(r=>r.json());
-  state.current = data;
-
-  $('#surahTitleAr').textContent = data.name_ar || 'سورة';
-  $('#surahTitleBn').textContent = data.name_bn || '';
-
-  // Render first ayah (keep your own ayah navigation if you have it)
-  renderAyah(data.verses[0]);
+// ---------- Loaders ----------
+async function loadManifest(){
+  try{
+    const res = await fetch(MANIFEST_URL, { cache:'no-store' });
+    if(!res.ok) throw new Error('Manifest fetch failed');
+    manifest = await res.json();
+  }catch(err){
+    console.error(err);
+    alert('Could not load manifest. Check file path & hosting.');
+  }
 }
 
-// --- Rendering ---
-function renderAyah(ayah){
-  // Ayah number and lit
-  const ayahNo = ayah.ayah_id.split(':')[1];
-  $('#ayahNumber').textContent = `Ayah ${ayahNo}`;
-  $('#ayahArabic').textContent = ayah.arabic;
-  $('#ayahBangla').textContent = ayah.bangla;
+async function initSurahSelect(){
+  const sel = document.getElementById('surahSelect');
+  sel.innerHTML = '';
 
-  const row = $('#cardsRow');
-
-  // ✅ Word-level RTL: reverse order when RTL
-  const isRTL = document.body.classList.contains('rtl');
-  const words = isRTL ? [...ayah.words].reverse() : ayah.words;
-
-  row.innerHTML = words.map(buildCard).join('');
-
-  // Wire the derived toggles
-  $$('.derived-toggle', row).forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const wrap = btn.nextElementSibling;
-      const open = wrap.classList.toggle('open');
-      btn.setAttribute('aria-expanded', open ? 'true':'false');
-      btn.querySelector('.plus').textContent = open ? '–' : '+';
-      // simple auto-max-height for transition
-      if(open){
-        // estimate height
-        wrap.style.maxHeight = wrap.scrollHeight + 'px';
-      }else{
-        wrap.style.maxHeight = '0px';
-      }
-    });
+  manifest.forEach((m,i)=>{
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = m.name;
+    sel.appendChild(opt);
   });
 
-  alignToStart();
-  $('#prevBtn').onclick = ()=> scrollOne(-1);
-  $('#nextBtn').onclick = ()=> scrollOne(1);
-  updateNavButtons();
-  row.addEventListener('scroll', debounce(updateNavButtons, 80));
+  sel.addEventListener('change', async (e)=>{
+    currentDeck = manifest[parseInt(e.target.value,10)];
+    currentAyahIndex = 0;
+    await loadSelectedSurah();
+  });
+
+  // default to first deck
+  if(manifest.length){
+    sel.value = 0;
+    currentDeck = manifest[0];
+  }
 }
 
-function buildCard(w){
-  const chips = [
-    w.tr ? `<span class="chip-pill">${escapeHtml(w.tr)}</span>` : '',
-    w.root ? `<span class="chip-pill badge-ar">${escapeHtml(w.root)}</span>` : '',
-    w.pattern ? `<span class="chip-pill badge-ar">${escapeHtml(w.pattern)}</span>` : ''
-  ].join('');
+async function loadSelectedSurah(){
+  if(!currentDeck) return;
+  try{
+    const res = await fetch(currentDeck.json, { cache:'no-store' });
+    if(!res.ok) throw new Error('JSON fetch failed');
+    surahData = await res.json();
+    renderAyah(currentAyahIndex);
+  }catch(err){
+    console.error(err);
+    alert('Could not load surah JSON. Check "json" path in manifest.');
+  }
+}
 
-  // Derived (up to 4, 2×2)
-  const derived = (w.derived && w.derived.length)
-    ? w.derived.slice(0,4).map(d=>`
-        <div class="der">
-          <div class="ar">${escapeHtml(d.ar||'')}</div>
-          <div class="bn">${escapeHtml(d.bn||'')}</div>
-          ${d.pattern?`<div class="pat badge-ar">${escapeHtml(d.pattern)}</div>`:''}
+// ---------- UI Bindings ----------
+function bindUI(){
+  document.getElementById('dirToggle').addEventListener('click', ()=>{
+    const isRTL = document.body.classList.toggle('rtl');
+    document.getElementById('dirToggle').textContent = isRTL ? 'RTL' : 'LTR';
+    document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+    positionWordStripForDirection();
+  });
+
+  document.getElementById('btnNext').addEventListener('click', ()=> scrollByStep('next'));
+  document.getElementById('btnPrev').addEventListener('click', ()=> scrollByStep('prev'));
+
+  // Expand/collapse Derived (event delegation on the strip)
+  document.querySelector(WORD_STRIP_SELECTOR).addEventListener('click', (e)=>{
+    const btn = e.target.closest('.derived-toggle');
+    if(!btn) return;
+
+    const panel = btn.closest('.word-card').querySelector('.derived-grid');
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!expanded));
+    btn.querySelector('.plus').textContent = expanded ? '+' : '−';
+
+    if(expanded){
+      panel.hidden = true;
+    }else{
+      panel.hidden = false;
+    }
+  });
+}
+
+// ---------- Render ----------
+function renderAyah(idx){
+  if(!surahData || !surahData.verses || !surahData.verses[idx]) return;
+
+  const ay = surahData.verses[idx];
+
+  // Surah header
+  document.getElementById('ayahChip').textContent = 'Ayah ' + (idx+1);
+  document.getElementById('surahTitleAr').textContent = surahData.name_ar || 'سورة';
+  document.getElementById('surahTitleBn').textContent = surahData.name_bn || '';
+  document.getElementById('ayahArabic').textContent = ay.arabic || '';
+  document.getElementById('ayahBangla').textContent = ay.bangla || '';
+
+  // Word strip
+  const row = document.querySelector(WORD_STRIP_SELECTOR);
+  row.innerHTML = (ay.words || []).map(renderWordCard).join('');
+
+  // after cards in DOM, adjust scroll start for direction
+  positionWordStripForDirection();
+}
+
+function renderWordCard(w){
+  const derivedTiles = (w.derived && w.derived.length)
+    ? w.derived.slice(0,4).map(d => `
+        <div class="derived-tile">
+          <p class="derived-ar" lang="ar" dir="rtl">${d.ar || '—'}</p>
+          <div class="derived-meta">
+            <span>${escapeHtml(d.bn || '—')}</span>
+            <span>${d.tr ? escapeHtml(d.tr) : ''}</span>
+            <span>${d.pattern ? escapeHtml(d.pattern) : ''}</span>
+          </div>
         </div>
       `).join('')
-    : `<div class="der"><div class="bn">—</div></div>`;
+    : `<div class="derived-tile"><p class="derived-ar" lang="ar" dir="rtl">—</p></div>`;
+
+  const chips = [
+    w.tr ? `<span class="chip">${escapeHtml(w.tr)}</span>` : '',
+    w.root ? `<span class="chip">${escapeHtml(w.root)}</span>` : '',
+    w.pattern ? `<span class="chip">${escapeHtml(w.pattern)}</span>` : ''
+  ].join('');
 
   return `
-    <article class="card">
-      <div class="label">MAIN</div>
-      <div class="main-txt">${escapeHtml(w.ar||'')}</div>
-      ${w.bn ? `<div class="bn">${escapeHtml(w.bn)}</div>` : ''}
+    <article class="word-card">
+      <div class="card-head">MAIN</div>
+      <h3 class="word-ar" lang="ar" dir="rtl">${w.ar || ''}</h3>
+      <p class="word-bn">${escapeHtml(w.bn || '')}</p>
+      <div class="chips">${chips}</div>
 
-      <div class="row-chips">${chips}</div>
-
-      <div class="derived-header">
-        <span class="label">DERIVED</span>
-        <button class="toggle derived-toggle" aria-expanded="false">
-          <span>Derived</span>
-          <span class="plus">+</span>
+      <div class="derived-row">
+        <span class="derived-label">DERIVED</span>
+        <button class="derived-toggle" type="button" aria-expanded="false">
+          Derived <span class="plus">+</span>
         </button>
       </div>
 
-      <div class="derived-wrap" aria-hidden="true">
-        <div class="der-grid">
-          ${derived}
-        </div>
+      <div class="derived-grid" hidden>
+        ${derivedTiles}
       </div>
     </article>
   `;
 }
 
-// --- Carousel helpers ---
-function alignToStart(){
+// ---------- Helpers ----------
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, m =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])
+  );
+}
+
+function positionWordStripForDirection(){
+  const strip = document.querySelector(WORD_STRIP_SELECTOR);
+  if(!strip) return;
+  requestAnimationFrame(()=>{
+    if(document.body.classList.contains('rtl')){
+      strip.scrollLeft = strip.scrollWidth;
+    }else{
+      strip.scrollLeft = 0;
+    }
+  });
+}
+
+function scrollByStep(which){
+  const strip = document.querySelector(WORD_STRIP_SELECTOR);
+  if(!strip) return;
+  const step = Math.round(strip.clientWidth * 0.85);
   const isRTL = document.body.classList.contains('rtl');
-  const row = $('#cardsRow');
-  // jump to right edge in RTL (so first word is visible)
-  if(isRTL){
-    row.scrollLeft = row.scrollWidth;
+
+  let delta;
+  if(which === 'next'){
+    delta = isRTL ? -step : step;
   }else{
-    row.scrollLeft = 0;
+    delta = isRTL ? step : -step;
   }
+  strip.scrollBy({ left: delta, behavior:'smooth' });
 }
-
-function scrollOne(dir){
-  const row = $('#cardsRow');
-  const step = row.clientWidth * 0.9;
-
-  const isRTL = document.body.classList.contains('rtl');
-  // For RTL we invert the sign so clicking "next" still moves to the next logical word.
-  const delta = isRTL ? -dir * step : dir * step;
-
-  row.scrollBy({left: delta, behavior:'smooth'});
-}
-
-function updateNavButtons(){
-  const row = $('#cardsRow');
-  const atStart = Math.abs(row.scrollLeft) < 6;
-  const atEnd = Math.abs(row.scrollWidth - row.clientWidth - row.scrollLeft) < 6;
-
-  // In RTL we start at right edge (which is "end" in scroll metrics)
-  const isRTL = document.body.classList.contains('rtl');
-  if(isRTL){
-    $('#prevBtn').disabled = atEnd;
-    $('#nextBtn').disabled = atStart;
-  }else{
-    $('#prevBtn').disabled = atStart;
-    $('#nextBtn').disabled = atEnd;
-  }
-}
-
-function escapeHtml(s){return (s??'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
