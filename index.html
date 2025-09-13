@@ -1,36 +1,51 @@
 <!DOCTYPE html>
 <html lang="bn" dir="ltr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Qur'an Word Explorer</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-  <header class="site-header">
-    <div class="brand">
-      <h1>Qur'an Word Explorer</h1>
-      <small>Practice roots & derived forms</small>
+  <header class="topbar">
+    <div class="brand-row">
+      <h1 class="app-title">Qur'an Word Explorer</h1>
+      <div class="top-actions">
+        <button id="dirToggle" class="pill">LTR</button>
+        <label class="pill pill--label">
+          <span id="surahLabel">Select Surah</span>
+          <select id="surahSelect"></select>
+        </label>
+      </div>
     </div>
-
-    <div class="controls">
-      <button id="dirToggle" class="dir-toggle" aria-label="Toggle interface direction">RTL</button>
-      <label for="surahSelect">Select Surah</label>
-      <select id="surahSelect" aria-label="Select Surah"></select>
-    </div>
+    <p class="subtitle">Practice roots &amp; derived forms</p>
   </header>
 
-  <main class="page">
-    <section id="surahMeta" class="surah-meta">
-      <h2 id="surahArabic" class="surah-ar" lang="ar" dir="rtl">—</h2>
-      <h3 id="surahBangla" class="surah-bn" dir="ltr">—</h3>
+  <main id="app">
+    <!-- Verse header -->
+    <section class="verse-header">
+      <h2 id="surahNameAr" class="surah-ar" lang="ar" dir="rtl"></h2>
+      <h3 id="surahNameBn" class="surah-bn" lang="bn"></h3>
+      <div id="ayahBadge" class="ayah-badge">Ayah</div>
+      <p id="ayahArabic" class="ayah-arabic" lang="ar" dir="rtl"></p>
+      <p id="ayahBangla" class="ayah-bangla" lang="bn"></p>
     </section>
 
-    <section id="verses" class="verses"></section>
+    <!-- Word cards -->
+    <section id="cardsRow" class="cards-row" aria-live="polite"></section>
+
+    <!-- Verse nav -->
+    <div class="verse-nav">
+      <button id="prevAyah" class="nav-btn" aria-label="Previous ayah">◀</button>
+      <span id="ayahCounter" class="ayah-counter"></span>
+      <button id="nextAyah" class="nav-btn" aria-label="Next ayah">▶</button>
+    </div>
   </main>
 
-  <footer class="site-footer">
-    <span>Dark theme • Mirrored UI (toggleable) • RTL verse flow</span>
+  <footer class="footer-tip">
+    Tip: Hover or tap a card to see details. Click “+ more” to expand derived forms.
   </footer>
 
   <script src="app.js"></script>
