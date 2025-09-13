@@ -1,38 +1,142 @@
-<!DOCTYPE html>
-<html lang="bn" dir="ltr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Qur'an Word Explorer</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header class="site-header">
-    <div class="brand">
-      <h1>Qur'an Word Explorer</h1>
-      <small>Practice roots & derived forms</small>
-    </div>
+/* ===== Color tokens (warm dark) ===== */
+:root{
+  --bg:#1C1C1C;
+  --tile:#2C2C2E;
+  --text-hi:#F2F4F8;
+  --text-mid:#C9CDD3;
+  --text-low:#A9A9A9;
+  --accent:#FFC857;
+  --soft:#3A3A3D;
+  --shadow: 0 10px 24px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.25);
+}
 
-    <div class="controls">
-      <button id="dirToggle" class="dir-toggle" aria-label="Toggle interface direction">RTL</button>
-      <label for="surahSelect">Select Surah</label>
-      <select id="surahSelect" aria-label="Select Surah"></select>
-    </div>
-  </header>
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text-hi);
+  font:16px/1.6 Roboto, Arial, sans-serif;
+}
 
-  <main class="page">
-    <section id="surahMeta" class="surah-meta">
-      <h2 id="surahArabic" class="surah-ar" lang="ar" dir="rtl">—</h2>
-      <h3 id="surahBangla" class="surah-bn" dir="ltr">—</h3>
-    </section>
+/* ===== Header (mirrors when .rtl on body) ===== */
+.site-header{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem; padding:12px 18px; border-bottom:1px solid var(--soft);
+  position:sticky; top:0; background:linear-gradient(180deg,#1C1C1C 85%, rgba(28,28,28,.9));
+  z-index:10;
+}
+body.rtl .site-header{ flex-direction:row-reverse; }
 
-    <section id="verses" class="verses"></section>
-  </main>
+.brand h1{margin:0; font-size:24px; font-weight:700; color:var(--text-hi)}
+.brand small{display:block; color:var(--text-low); margin-top:2px}
 
-  <footer class="site-footer">
-    <span>Dark theme • Mirrored UI (toggleable) • RTL verse flow</span>
-  </footer>
+.controls{display:flex; align-items:center; gap:.5rem}
+body.rtl .controls{ flex-direction:row-reverse; }
+.controls label{color:var(--text-mid); font-size:14px}
 
-  <script src="app.js"></script>
-</body>
-</html>
+.controls select{
+  appearance:none; background:var(--tile); color:var(--text-hi);
+  border:1px solid var(--soft); border-radius:8px; padding:.5rem .75rem;
+  box-shadow:var(--shadow);
+}
+
+.dir-toggle{
+  background:rgba(255,255,255,.08);
+  color:var(--text-hi);
+  border:1px solid var(--soft);
+  border-radius:999px;
+  padding:.4rem .75rem;
+  cursor:pointer;
+  box-shadow:var(--shadow);
+  font-size:14px;
+}
+
+/* ===== Surah Meta ===== */
+.surah-meta{
+  max-width:1200px; margin:22px auto 10px; padding:0 16px; text-align:center;
+}
+.surah-ar{
+  font-family:"Noto Sans Arabic","Tajawal","Amiri",serif;
+  font-size:48px; font-weight:800; margin:.25rem 0; letter-spacing:.5px;
+}
+.surah-bn{
+  font-size:18px; color:var(--text-mid); margin:0 0 12px;
+}
+
+/* ===== Verses ===== */
+.verses{
+  max-width:1200px; margin:0 auto; padding:0 16px 40px;
+  display:flex; flex-direction:column; gap:24px;
+}
+
+.verse-head{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  padding:12px 10px; border-radius:12px; background:transparent;
+}
+.ayah-line{
+  font-family:"Noto Sans Arabic","Tajawal","Amiri",serif;
+  font-size:32px; line-height:1.9; text-align:center; direction:rtl;
+  margin:0; word-wrap:break-word;
+}
+.ayah-tag{
+  display:inline-block; margin-top:6px; padding:2px 8px; border-radius:999px;
+  background:rgba(255,200,87,.15); color:var(--accent); font-weight:700; font-size:14px;
+  border:1px solid rgba(255,200,87,.3);
+}
+.ayah-bn{
+  text-align:center; margin:0; color:var(--text-mid); font-size:16px; direction:ltr;
+}
+
+/* ===== Word tiles rail (RTL flow) ===== */
+.words-rail{
+  display:flex; flex-wrap:wrap; gap:12px; margin-top:8px;
+  direction:rtl; /* traverse like the verse */
+  justify-content:flex-start;
+}
+
+/* Tile (variable width) */
+.word-card{
+  background:var(--tile); border:1px solid var(--soft);
+  border-radius:14px; padding:10px 12px; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; gap:8px; min-width:180px; max-width:360px;
+  flex:0 1 auto;
+}
+
+/* Main vs Derived separation */
+.word-main{ padding-bottom:8px; border-bottom:1px dashed rgba(255,255,255,.12) }
+.word-main .w-ar{
+  font-family:"Noto Sans Arabic","Tajawal","Amiri",serif;
+  font-size:26px; line-height:1.3; font-weight:700; margin:0; text-align:left; direction:rtl;
+}
+.word-main .w-bn{margin:2px 0 0; color:var(--text-mid)}
+.word-main .w-tr{margin:0; color:var(--text-low); font-size:14px}
+.word-meta{display:flex; gap:10px; flex-wrap:wrap; margin-top:4px}
+.badge{
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
+  color:var(--text-mid); padding:2px 8px; border-radius:999px; font-size:12px;
+}
+
+.derived{ display:flex; flex-wrap:wrap; gap:8px; }
+.derived-item{
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+  border-radius:10px; padding:6px 8px; min-width:120px; max-width:100%;
+}
+.derived-item .d-ar{
+  font-family:"Noto Sans Arabic","Tajawal","Amiri",serif;
+  font-size:20px; font-weight:700; line-height:1.2; margin:0; direction:rtl; text-align:left;
+}
+.derived-item .d-bn{margin:2px 0 0; color:var(--text-mid); font-size:14px}
+.derived-item .d-tr{margin:0; color:var(--text-low); font-size:12px}
+.derived-item .d-pat{margin:2px 0 0; color:var(--text-low); font-size:12px}
+
+/* Footer */
+.site-footer{
+  border-top:1px solid var(--soft); padding:14px 18px; color:var(--text-low); text-align:center;
+}
+
+/* Responsive */
+@media (max-width:700px){
+  .surah-ar{font-size:40px}
+  .ayah-line{font-size:28px}
+}
