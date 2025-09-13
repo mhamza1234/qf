@@ -10,10 +10,10 @@
   <header class="app-header">
     <h1 class="app-title">Qur'an Word Explorer</h1>
     <div class="header-controls">
-      <button id="dirToggle" class="toggle-btn">LTR</button>
+      <button id="dirToggle" class="toggle-btn" aria-pressed="true">LTR</button>
       <label class="surah-label">
         Select Surah
-        <select id="surahSelect"></select>
+        <select id="surahSelect" aria-label="Select surah"></select>
       </label>
     </div>
   </header>
@@ -22,6 +22,7 @@
     <section id="surahHeader">
       <h2 id="surahTitle" class="surah-title"></h2>
       <h3 id="surahTitleBn" class="surah-title-bn"></h3>
+
       <div id="ayahBox" class="ayah-box">
         <div id="ayahNumber" class="ayah-number"></div>
         <p id="ayahArabic" class="ayah-ar"></p>
@@ -29,8 +30,15 @@
       </div>
     </section>
 
-    <section id="wordCardsContainer">
-      <!-- cards injected here -->
+    <!-- Carousel shell -->
+    <section class="carousel">
+      <button class="nav-btn prev" id="prevBtn" aria-label="Previous words">‹</button>
+
+      <div id="wordCardsContainer" class="cards-viewport">
+        <div id="cardsRow" class="cards-row" role="list"></div>
+      </div>
+
+      <button class="nav-btn next" id="nextBtn" aria-label="Next words">›</button>
     </section>
   </main>
 
