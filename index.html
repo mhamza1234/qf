@@ -4,33 +4,33 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Qur'an Word Explorer</title>
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
-    <div class="header-inner">
-      <h1 class="app-title">Qur'an Word Explorer</h1>
+    <div class="brand">
+      <h1>Qur'an Word Explorer</h1>
+      <small>Practice roots & derived forms</small>
+    </div>
 
-      <div class="controls">
-        <label for="surahSelect" class="sr-only">Select Surah</label>
-        <select id="surahSelect" class="select">
-          <!-- populated by JS -->
-        </select>
-        <span id="loadStatus" class="load-status" aria-live="polite"></span>
-      </div>
+    <div class="controls">
+      <button id="dirToggle" class="dir-toggle" aria-label="Toggle interface direction">RTL</button>
+      <label for="surahSelect">Select Surah</label>
+      <select id="surahSelect" aria-label="Select Surah"></select>
     </div>
   </header>
 
-  <main id="content" class="container" role="main">
-    <!-- Populated by JS -->
+  <main class="page">
+    <section id="surahMeta" class="surah-meta">
+      <h2 id="surahArabic" class="surah-ar" lang="ar" dir="rtl">—</h2>
+      <h3 id="surahBangla" class="surah-bn" dir="ltr">—</h3>
+    </section>
+
+    <section id="verses" class="verses"></section>
   </main>
 
   <footer class="site-footer">
-    <small>Built for learners — readable, welcoming, and accessible.</small>
+    <span>Dark theme • Mirrored UI (toggleable) • RTL verse flow</span>
   </footer>
 
   <script src="app.js"></script>
