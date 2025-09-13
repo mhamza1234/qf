@@ -1,158 +1,218 @@
-// UI mirroring + rendering
+/*  App: Qur'an Word Explorer
+    - Dark theme + centered verse
+    - LTR/RTL full mirroring toggle
+    - Derived forms: summary (+N) -> expandable 2×2 grid
+    - Variable-height cards
+*/
+
 const els = {
-  surahSelect: document.getElementById('surahSelect'),
-  surahArabic: document.getElementById('surahArabic'),
-  surahBangla: document.getElementById('surahBangla'),
-  verses: document.getElementById('verses'),
   dirToggle: document.getElementById('dirToggle'),
+  surahSelect: document.getElementById('surahSelect'),
+  surahNameAr: document.getElementById('surahNameAr'),
+  surahNameBn: document.getElementById('surahNameBn'),
+  ayahBadge: document.getElementById('ayahBadge'),
+  ayahArabic: document.getElementById('ayahArabic'),
+  ayahBangla: document.getElementById('ayahBangla'),
+  cardsRow: document.getElementById('cardsRow'),
+  prevAyah: document.getElementById('prevAyah'),
+  nextAyah: document.getElementById('nextAyah'),
+  ayahCounter: document.getElementById('ayahCounter'),
 };
 
 let manifest = [];
-let allRoots = {};
+let currentDeck = null;     // { id, name, json, mode }
+let surah = null;           // loaded JSON: { verses: [...] }
+let ayahIndex = 0;          // 0-based
 
-init();
+// ---------- bootstrap ----------
+init().catch(console.error);
 
 async function init(){
-  // Restore UI direction preference (default: RTL since Arabic is primary)
-  const savedDir = localStorage.getItem('uiDir');
-  const rtl = savedDir ? savedDir === 'rtl' : true;
-  applyUiDir(rtl);
+  await loadManifest();
+  buildSurahDropdown();
+  wireTopbar();
+  // load the first deck by default
+  if (manifest.length) {
+    await selectDeck(manifest[0].id);
+  }
+}
 
-  // Load manifest + roots
+// Manifest expected at root: /manifest.json
+async function loadManifest(){
   try{
-    manifest = await fetchJSON('./manifest.json');
+    const res = await fetch('manifest.json', {cache: 'no-store'});
+    if(!res.ok) throw new Error('manifest fetch failed');
+    manifest = await res.json();
   }catch(e){
-    alert('Could not load manifest. Check file path & hosting.');
-    throw e;
+    console.error('Could not load manifest. Check file path & hosting.', e);
+    showToast('Could not load manifest. Check file path & hosting.');
+    manifest = [];
   }
+}
 
+function buildSurahDropdown(){
+  // Clean and repopulate
+  els.surahSelect.innerHTML = '';
+  manifest.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = m.name || m.id;
+    els.surahSelect.appendChild(opt);
+  });
+  els.surahSelect.addEventListener('change', async (e)=>{
+    await selectDeck(e.target.value);
+  });
+}
+
+async function selectDeck(id){
+  currentDeck = manifest.find(m => m.id === id) || manifest[0];
+  if(!currentDeck) return;
   try{
-    allRoots = await fetchJSON('./data/all_roots.json');
-  }catch{
-    allRoots = {};
+    const res = await fetch(currentDeck.json, {cache: 'no-store'});
+    if(!res.ok) throw new Error('surah json fetch failed');
+    surah = await res.json();
+    ayahIndex = 0;
+    renderAyah();
+  }catch(e){
+    console.error('Failed loading surah json', e);
+    showToast('Could not load surah JSON. Check path in manifest.');
   }
+}
 
-  // Populate dropdown
-  els.surahSelect.innerHTML = manifest.map((m,i)=>
-    `<option value="${i}">${m.name}</option>`).join('');
+// ---------- rendering ----------
+function renderAyah(){
+  if(!surah || !surah.verses || !surah.verses.length) return;
 
-  // Load first
-  if (manifest.length){
-    els.surahSelect.value = '0';
-    loadSurahByIndex(0);
-  }
+  const v = surah.verses[ayahIndex];
 
-  els.surahSelect.addEventListener('change', e=>{
-    loadSurahByIndex(Number(e.target.value));
-    window.scrollTo({top:0, behavior:'smooth'});
+  // Headings
+  els.surahNameAr.textContent = surah.name_ar || '';
+  els.surahNameBn.textContent = surah.name_bn || '';
+  els.ayahBadge.textContent = `Ayah ${ayahIndex + 1}`;
+
+  // Verse lines
+  els.ayahArabic.textContent = v.arabic || '';
+  els.ayahBangla.textContent = v.bangla || '';
+
+  // Cards
+  els.cardsRow.innerHTML = '';
+  (v.words || []).forEach(w => {
+    els.cardsRow.appendChild(buildWordCard(w));
   });
 
-  els.dirToggle.addEventListener('click', ()=>{
-    const nowRtl = !document.body.classList.contains('rtl');
-    applyUiDir(nowRtl);
-    localStorage.setItem('uiDir', nowRtl ? 'rtl' : 'ltr');
-  });
+  // nav
+  els.ayahCounter.textContent = `${ayahIndex + 1} / ${surah.verses.length}`;
+  toggleNav()
 }
 
-function applyUiDir(isRtl){
-  document.body.classList.toggle('rtl', isRtl);
-  document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
-  els.dirToggle.textContent = isRtl ? 'LTR' : 'RTL';
-  els.dirToggle.setAttribute('aria-label', isRtl ? 'Switch to LTR interface' : 'Switch to RTL interface');
+function toggleNav(){
+  els.prevAyah.disabled = (ayahIndex === 0);
+  els.nextAyah.disabled = (ayahIndex >= surah.verses.length - 1);
 }
 
-async function loadSurahByIndex(idx){
-  const item = manifest[idx];
-  if(!item) return;
-  const data = await fetchJSON(item.json);
-  renderSurah(data);
-}
+els.prevAyah.addEventListener('click', ()=>{
+  if(ayahIndex > 0){ ayahIndex--; renderAyah(); }
+});
+els.nextAyah.addEventListener('click', ()=>{
+  if(ayahIndex < surah.verses.length - 1){ ayahIndex++; renderAyah(); }
+});
 
-function renderSurah(data){
-  els.surahArabic.textContent = data.name_ar || '—';
-  els.surahBangla.textContent = data.name_bn || '';
+function buildWordCard(w){
+  const card = document.createElement('article');
+  card.className = 'word-card';
 
-  els.verses.innerHTML = (data.verses || []).map(v => renderVerse(v)).join('');
-}
+  // MAIN block
+  const mainLbl = el('span','section-label','MAIN');
+  const ar = el('h3','word-ar', w.ar || '');
+  ar.setAttribute('lang','ar'); ar.setAttribute('dir','rtl');
 
-function renderVerse(v){
-  const ayahNum = getAyahNumber(v.ayah_id);
-  const cards = (v.words || []).map(w => renderWordCard(mergeDerived(w))).join('');
+  const bn = el('p','word-bn', w.bn || '');
+  const meta = el('div','meta-row');
+  if (w.tr) meta.appendChild(chip(w.tr));
+  if (w.root) meta.appendChild(chip(w.root));
+  if (w.pattern) meta.appendChild(chip(w.pattern));
 
-  return `
-    <article class="verse" data-ayah-id="${v.ayah_id}">
-      <div class="verse-head">
-        <span class="ayah-tag">Ayah ${ayahNum}</span>
-        <p class="ayah-line" lang="ar" dir="rtl">${v.arabic || ''}</p>
-        <p class="ayah-bn" dir="ltr">${v.bangla || ''}</p>
-      </div>
-      <div class="words-rail" dir="rtl">
-        ${cards}
-      </div>
-    </article>
-  `;
-}
+  card.append(mainLbl, ar, bn, meta, el('div','hr'));
 
-function mergeDerived(w){
-  const out = {...w};
-  const given = Array.isArray(out.derived) ? out.derived.slice() : [];
-  if (out.root && allRoots[out.root]){
-    const seen = new Set(given.map(d=>d.ar));
-    allRoots[out.root].forEach(arForm=>{
-      if(!seen.has(arForm)){
-        given.push({ ar: arForm, bn:'', tr:'', pattern:'' });
-      }
+  // DERIVED block
+  const dLbl = el('span','section-label','DERIVED');
+  const wrapper = document.createElement('div');
+  wrapper.appendChild(dLbl);
+
+  const derived = Array.isArray(w.derived) ? w.derived : [];
+  const summary = el('div','derived-summary');
+  const firstTwo = derived.slice(0,2);
+  firstTwo.forEach(d => summary.appendChild(derivedChip(d)));
+  if (derived.length > 2) {
+    const more = document.createElement('button');
+    more.className = 'more-btn';
+    more.textContent = `+${derived.length - 2} more`;
+    more.addEventListener('click', ()=>{
+      more.remove();
+      summary.remove();
+      wrapper.appendChild(buildDerivedGrid(derived));
     });
+    summary.appendChild(more);
   }
-  out.derived = given;
-  return out;
+  if (derived.length === 0) {
+    const none = document.createElement('span');
+    none.className = 'chip';
+    none.textContent = '—';
+    summary.appendChild(none);
+  }
+  wrapper.appendChild(summary);
+  card.appendChild(wrapper);
+
+  return card;
 }
 
-function renderWordCard(w){
-  const meta = [
-    w.root ? `<span class="badge">${w.root}</span>` : '',
-    w.pattern ? `<span class="badge">${w.pattern}</span>` : ''
-  ].join('');
-
-  const derived = (w.derived || []).map(d=>`
-      <div class="derived-item">
-        <p class="d-ar" lang="ar" dir="rtl">${escapeHTML(d.ar || '')}</p>
-        ${d.bn ? `<p class="d-bn">${escapeHTML(d.bn)}</p>` : ''}
-        ${d.tr ? `<p class="d-tr">${escapeHTML(d.tr)}</p>` : ''}
-        ${d.pattern ? `<p class="d-pat">${escapeHTML(d.pattern)}</p>` : ''}
-      </div>
-  `).join('');
-
-  return `
-    <div class="word-card" dir="ltr">
-      <div class="word-main">
-        <p class="w-ar" lang="ar" dir="rtl">${escapeHTML(w.ar || '')}</p>
-        ${w.bn ? `<p class="w-bn">${escapeHTML(w.bn)}</p>` : ''}
-        ${w.tr ? `<p class="w-tr">${escapeHTML(w.tr)}</p>` : ''}
-        ${meta ? `<div class="word-meta">${meta}</div>` : ''}
-      </div>
-      ${derived ? `<div class="derived">${derived}</div>` : ''}
-    </div>
-  `;
+function buildDerivedGrid(list){
+  const grid = el('div','derived-grid');
+  list.forEach(d => {
+    const item = el('div','derived-item');
+    const ar = el('div','derived-ar', d.ar || '');
+    ar.setAttribute('lang','ar'); ar.setAttribute('dir','rtl');
+    const bn = el('div','derived-bn', d.bn || '');
+    const line = el('div','derived-line');
+    if (d.tr) line.appendChild(chip(d.tr));
+    if (d.pattern) line.appendChild(chip(d.pattern));
+    if (d.root) line.appendChild(chip(d.root));
+    item.append(ar,bn,line);
+    grid.appendChild(item);
+  });
+  return grid;
 }
 
-function getAyahNumber(ayahId){
-  if(!ayahId) return '';
-  const p = String(ayahId).split(':');
-  return p[1] || '';
+/* helpers */
+function el(tag, cls, txt){
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (txt != null) e.textContent = txt;
+  return e;
+}
+function chip(text){
+  const c = document.createElement('span');
+  c.className = 'chip';
+  c.textContent = text;
+  return c;
+}
+function derivedChip(d){
+  const c = document.createElement('span');
+  c.className = 'chip';
+  c.textContent = d?.ar ? `${d.ar}${d.bn?` — ${d.bn}`:''}` : (d?.bn || '—');
+  return c;
 }
 
-async function fetchJSON(url){
-  const res = await fetch(url, {cache:'no-store'});
-  if(!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-  return res.json();
+// ---------- LTR / RTL toggle ----------
+function wireTopbar(){
+  els.dirToggle.addEventListener('click', ()=>{
+    const isRtl = document.body.getAttribute('dir') === 'rtl';
+    document.body.setAttribute('dir', isRtl ? 'ltr' : 'rtl');
+    els.dirToggle.textContent = isRtl ? 'LTR' : 'RTL';
+  });
 }
 
-function escapeHTML(s){
-  return String(s || '')
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
+// Toast (console fallback)
+function showToast(msg){
+  console.log('[Toast]', msg);
 }
