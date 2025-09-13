@@ -1,218 +1,99 @@
-/*  App: Qur'an Word Explorer
-    - Dark theme + centered verse
-    - LTR/RTL full mirroring toggle
-    - Derived forms: summary (+N) -> expandable 2×2 grid
-    - Variable-height cards
-*/
-
-const els = {
-  dirToggle: document.getElementById('dirToggle'),
-  surahSelect: document.getElementById('surahSelect'),
-  surahNameAr: document.getElementById('surahNameAr'),
-  surahNameBn: document.getElementById('surahNameBn'),
-  ayahBadge: document.getElementById('ayahBadge'),
-  ayahArabic: document.getElementById('ayahArabic'),
-  ayahBangla: document.getElementById('ayahBangla'),
-  cardsRow: document.getElementById('cardsRow'),
-  prevAyah: document.getElementById('prevAyah'),
-  nextAyah: document.getElementById('nextAyah'),
-  ayahCounter: document.getElementById('ayahCounter'),
-};
-
-let manifest = [];
-let currentDeck = null;     // { id, name, json, mode }
-let surah = null;           // loaded JSON: { verses: [...] }
-let ayahIndex = 0;          // 0-based
-
-// ---------- bootstrap ----------
-init().catch(console.error);
-
-async function init(){
-  await loadManifest();
-  buildSurahDropdown();
-  wireTopbar();
-  // load the first deck by default
-  if (manifest.length) {
-    await selectDeck(manifest[0].id);
-  }
-}
-
-// Manifest expected at root: /manifest.json
-async function loadManifest(){
-  try{
-    const res = await fetch('manifest.json', {cache: 'no-store'});
-    if(!res.ok) throw new Error('manifest fetch failed');
-    manifest = await res.json();
-  }catch(e){
-    console.error('Could not load manifest. Check file path & hosting.', e);
-    showToast('Could not load manifest. Check file path & hosting.');
-    manifest = [];
-  }
-}
-
-function buildSurahDropdown(){
-  // Clean and repopulate
-  els.surahSelect.innerHTML = '';
-  manifest.forEach(m => {
+// Load manifest & build surah selector
+async function loadManifest() {
+  const res = await fetch('manifest.json');
+  if (!res.ok) throw new Error('Manifest not found');
+  const manifest = await res.json();
+  const select = document.getElementById('surahSelect');
+  manifest.forEach(item => {
     const opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = m.name || m.id;
-    els.surahSelect.appendChild(opt);
+    opt.value = item.json;
+    opt.textContent = `${item.name}`;
+    select.appendChild(opt);
   });
-  els.surahSelect.addEventListener('change', async (e)=>{
-    await selectDeck(e.target.value);
-  });
+  select.addEventListener('change', () => loadSurah(select.value));
+  if (manifest.length) loadSurah(manifest[0].json);
 }
 
-async function selectDeck(id){
-  currentDeck = manifest.find(m => m.id === id) || manifest[0];
-  if(!currentDeck) return;
-  try{
-    const res = await fetch(currentDeck.json, {cache: 'no-store'});
-    if(!res.ok) throw new Error('surah json fetch failed');
-    surah = await res.json();
-    ayahIndex = 0;
-    renderAyah();
-  }catch(e){
-    console.error('Failed loading surah json', e);
-    showToast('Could not load surah JSON. Check path in manifest.');
+async function loadSurah(path) {
+  const res = await fetch(path);
+  const data = await res.json();
+  renderSurah(data);
+}
+
+function renderSurah(data) {
+  const surahTitle = document.getElementById('surahTitle');
+  const surahTitleBn = document.getElementById('surahTitleBn');
+  const cardsContainer = document.getElementById('wordCardsContainer');
+
+  surahTitle.textContent = `سورة ${data.name_ar}`;
+  surahTitleBn.textContent = data.name_bn;
+
+  // show first ayah
+  renderAyah(data.verses[0]);
+
+  function renderAyah(ayah) {
+    document.getElementById('ayahNumber').textContent = `Ayah ${ayah.ayah_id.split(':')[1]}`;
+    document.getElementById('ayahArabic').textContent = ayah.arabic;
+    document.getElementById('ayahBangla').textContent = ayah.bangla;
+
+    const row = document.createElement('div');
+    row.className = 'cards-row';
+    row.innerHTML = ayah.words.map(w => createCardHTML(w)).join('');
+    cardsContainer.innerHTML = '';
+    cardsContainer.appendChild(row);
+    alignCarouselToStart(row);
   }
 }
 
-// ---------- rendering ----------
-function renderAyah(){
-  if(!surah || !surah.verses || !surah.verses.length) return;
+function createCardHTML(word) {
+  const derivedHTML = word.derived && word.derived.length
+    ? word.derived.map(d =>
+        `<div class="derived-item">
+          <span class="ar">${d.ar}</span>
+          <span class="bn">${d.bn}</span>
+          <span class="pattern">${d.pattern}</span>
+        </div>`
+      ).join('')
+    : `<div class="derived-item"><span class="bn">–</span></div>`;
 
-  const v = surah.verses[ayahIndex];
+  return `
+    <div class="word-card">
+      <div class="card-header"><span>MAIN</span></div>
+      <div class="card-main-ar">${word.ar}</div>
+      <div class="card-bn">${word.bn}</div>
+      <div class="card-meta">
+        <span class="meta-chip">${word.tr || ''}</span>
+        ${word.root ? `<span class="meta-chip">${word.root}</span>` : ''}
+        ${word.pattern ? `<span class="meta-chip">${word.pattern}</span>` : ''}
+      </div>
+      <div class="card-header"><span>DERIVED</span></div>
+      <div class="derived-list">${derivedHTML}</div>
+    </div>
+  `;
+}
 
-  // Headings
-  els.surahNameAr.textContent = surah.name_ar || '';
-  els.surahNameBn.textContent = surah.name_bn || '';
-  els.ayahBadge.textContent = `Ayah ${ayahIndex + 1}`;
-
-  // Verse lines
-  els.ayahArabic.textContent = v.arabic || '';
-  els.ayahBangla.textContent = v.bangla || '';
-
-  // Cards
-  els.cardsRow.innerHTML = '';
-  (v.words || []).forEach(w => {
-    els.cardsRow.appendChild(buildWordCard(w));
+/* Align carousel so the rightmost card (first word) is visible */
+function alignCarouselToStart(rowEl) {
+  const isRTL = document.body.classList.contains('rtl');
+  requestAnimationFrame(() => {
+    if (isRTL) {
+      rowEl.scrollLeft = rowEl.scrollWidth;
+      rowEl.scrollLeft = rowEl.scrollWidth * 2;
+      rowEl.scrollLeft = 1e9;
+    } else {
+      rowEl.scrollLeft = 0;
+    }
   });
-
-  // nav
-  els.ayahCounter.textContent = `${ayahIndex + 1} / ${surah.verses.length}`;
-  toggleNav()
 }
 
-function toggleNav(){
-  els.prevAyah.disabled = (ayahIndex === 0);
-  els.nextAyah.disabled = (ayahIndex >= surah.verses.length - 1);
-}
-
-els.prevAyah.addEventListener('click', ()=>{
-  if(ayahIndex > 0){ ayahIndex--; renderAyah(); }
+// Toggle RTL/LTR
+document.getElementById('dirToggle').addEventListener('click', () => {
+  document.body.classList.toggle('rtl');
+  document.body.dir = document.body.classList.contains('rtl') ? 'rtl' : 'ltr';
+  document.getElementById('dirToggle').textContent =
+    document.body.classList.contains('rtl') ? 'LTR' : 'RTL';
+  const row = document.querySelector('.cards-row');
+  if (row) alignCarouselToStart(row);
 });
-els.nextAyah.addEventListener('click', ()=>{
-  if(ayahIndex < surah.verses.length - 1){ ayahIndex++; renderAyah(); }
-});
 
-function buildWordCard(w){
-  const card = document.createElement('article');
-  card.className = 'word-card';
-
-  // MAIN block
-  const mainLbl = el('span','section-label','MAIN');
-  const ar = el('h3','word-ar', w.ar || '');
-  ar.setAttribute('lang','ar'); ar.setAttribute('dir','rtl');
-
-  const bn = el('p','word-bn', w.bn || '');
-  const meta = el('div','meta-row');
-  if (w.tr) meta.appendChild(chip(w.tr));
-  if (w.root) meta.appendChild(chip(w.root));
-  if (w.pattern) meta.appendChild(chip(w.pattern));
-
-  card.append(mainLbl, ar, bn, meta, el('div','hr'));
-
-  // DERIVED block
-  const dLbl = el('span','section-label','DERIVED');
-  const wrapper = document.createElement('div');
-  wrapper.appendChild(dLbl);
-
-  const derived = Array.isArray(w.derived) ? w.derived : [];
-  const summary = el('div','derived-summary');
-  const firstTwo = derived.slice(0,2);
-  firstTwo.forEach(d => summary.appendChild(derivedChip(d)));
-  if (derived.length > 2) {
-    const more = document.createElement('button');
-    more.className = 'more-btn';
-    more.textContent = `+${derived.length - 2} more`;
-    more.addEventListener('click', ()=>{
-      more.remove();
-      summary.remove();
-      wrapper.appendChild(buildDerivedGrid(derived));
-    });
-    summary.appendChild(more);
-  }
-  if (derived.length === 0) {
-    const none = document.createElement('span');
-    none.className = 'chip';
-    none.textContent = '—';
-    summary.appendChild(none);
-  }
-  wrapper.appendChild(summary);
-  card.appendChild(wrapper);
-
-  return card;
-}
-
-function buildDerivedGrid(list){
-  const grid = el('div','derived-grid');
-  list.forEach(d => {
-    const item = el('div','derived-item');
-    const ar = el('div','derived-ar', d.ar || '');
-    ar.setAttribute('lang','ar'); ar.setAttribute('dir','rtl');
-    const bn = el('div','derived-bn', d.bn || '');
-    const line = el('div','derived-line');
-    if (d.tr) line.appendChild(chip(d.tr));
-    if (d.pattern) line.appendChild(chip(d.pattern));
-    if (d.root) line.appendChild(chip(d.root));
-    item.append(ar,bn,line);
-    grid.appendChild(item);
-  });
-  return grid;
-}
-
-/* helpers */
-function el(tag, cls, txt){
-  const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (txt != null) e.textContent = txt;
-  return e;
-}
-function chip(text){
-  const c = document.createElement('span');
-  c.className = 'chip';
-  c.textContent = text;
-  return c;
-}
-function derivedChip(d){
-  const c = document.createElement('span');
-  c.className = 'chip';
-  c.textContent = d?.ar ? `${d.ar}${d.bn?` — ${d.bn}`:''}` : (d?.bn || '—');
-  return c;
-}
-
-// ---------- LTR / RTL toggle ----------
-function wireTopbar(){
-  els.dirToggle.addEventListener('click', ()=>{
-    const isRtl = document.body.getAttribute('dir') === 'rtl';
-    document.body.setAttribute('dir', isRtl ? 'ltr' : 'rtl');
-    els.dirToggle.textContent = isRtl ? 'LTR' : 'RTL';
-  });
-}
-
-// Toast (console fallback)
-function showToast(msg){
-  console.log('[Toast]', msg);
-}
+loadManifest();
