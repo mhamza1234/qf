@@ -26,7 +26,7 @@
   {
     "id": "lahab-full",
     "name": "Al-Masad / Lahab (111)",
-    "json": "data/lahab.json",
+    "json": "data/lahab_full.jason",
     "mode": "full"
   },
   {
